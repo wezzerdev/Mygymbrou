@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  mygymbrou-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mygymbrou-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://gymuser:gympassword@postgres:5432/mygymbrou?schema=public
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_TEXT_MODEL=llama3.2
+      - OLLAMA_VISION_MODEL=llama3.2-vision
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: mygymbrou-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gymuser
+      POSTGRES_PASSWORD: gympassword
+      POSTGRES_DB: mygymbrou
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mygymbrou-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+volumes:
+  postgres_data:
+  ollama_data:

@@ -1,0 +1,18 @@
+{
+  "name": "MyGymBrou — Pro AI Fitness & Vision Tracker",
+  "short_name": "MyGymBrou",
+  "description": "Tracker inteligente de entrenamiento en vivo, visión nutricional con IA local (Ollama) y analítica biométrica con contraste AAA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090B",
+  "theme_color": "#09090B",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

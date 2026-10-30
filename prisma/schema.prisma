@@ -1,0 +1,145 @@
+// Esquema Relacional PostgreSQL para MyGymBrou (Dokploy + Prisma)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String       @id @default(cuid())
+  name            String
+  email           String       @unique
+  dailyKcalTarget Int          @default(2350)
+  proteinTargetG  Int          @default(185)
+  carbsTargetG    Int          @default(240)
+  fatTargetG      Int          @default(68)
+  splitType       String       @default("PPL") // PPL, UPPER_LOWER, FULL_BODY
+  createdAt       DateTime     @default(now())
+
+  metrics         BodyMetric[]
+  meals           Meal[]
+  workouts        Workout[]
+
+  @@map("users")
+}
+
+model BodyMetric {
+  id          String   @id @default(cuid())
+  userId      String
+  fecha       DateTime @default(now())
+  peso        Float    // kg
+  altura      Float    // cm
+  grasa       Float?   // % bioimpedancia
+  pechoCm     Float?
+  brazoCm     Float?
+  cinturaCm   Float?
+  piernaCm    Float?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, fecha])
+  @@map("metrics")
+}
+
+model Meal {
+  id          String     @id @default(cuid())
+  userId      String
+  fecha       DateTime   @default(now())
+  tipoComida  String     // DESAYUNO, ALMUERZO, PRE_ENTRENO, CENA, SNACK
+  nombrePlato String
+  totalKcal   Int
+  proteinas   Float
+  carbs       Float
+  grasas      Float
+  fotoUrl     String?
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       MealItem[]
+
+  @@index([userId, fecha])
+  @@map("meals")
+}
+
+model MealItem {
+  id        String @id @default(cuid())
+  mealId    String
+  alimento  String
+  gramos    Float
+  kcal      Int
+  proteinas Float
+  carbs     Float
+  grasas    Float
+
+  meal      Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@map("meal_items")
+}
+
+model ExerciseCatalog {
+  id               String            @id @default(cuid())
+  nombre           String            @unique
+  grupoMuscular    String            // PECHO, ESPALDA, HOMBROS, PIERNAS, BRAZOS, CORE
+  equipoNecesario  String            // BARRA, MANCUERNAS, POLEA, MAQUINA, PESO_CORPORAL
+  curvaResistencia String            // ESTIRAMIENTO, ACORTAMIENTO, MEDIA
+  force            String            @default("push")         // push, pull, static (free-exercise-db)
+  mechanic         String            @default("compound")     // compound, isolation (free-exercise-db)
+  level            String            @default("intermediate") // beginner, intermediate, expert (free-exercise-db)
+  primaryMuscles   String[]          @default([])
+  secondaryMuscles String[]          @default([])
+  instructions     String[]          @default([])
+  freeExerciseDbId String?                                    // ID de carpeta en yuhonas/free-exercise-db
+  tipsEjecucion    String
+  DescansoSugerido Int               @default(90)
+
+  workoutExercises WorkoutExercise[]
+
+  @@map("exercise_catalog")
+}
+
+model Workout {
+  id           String            @id @default(cuid())
+  userId       String
+  fecha        DateTime          @default(now())
+  nombreRutina String
+  tiempoTotal  Int               // segundos
+  rpeGeneral   Float?
+  completado   Boolean           @default(false)
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises    WorkoutExercise[]
+
+  @@index([userId, fecha])
+  @@map("workouts")
+}
+
+model WorkoutExercise {
+  id          String          @id @default(cuid())
+  workoutId   String
+  ejercicioId String
+  orden       Int
+
+  workout     Workout         @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  ejercicio   ExerciseCatalog @relation(fields: [ejercicioId], references: [id])
+  sets        WorkoutSet[]
+
+  @@map("workout_exercises")
+}
+
+model WorkoutSet {
+  id                String          @id @default(cuid())
+  workoutExerciseId String
+  setNum            Int
+  pesoKg            Float
+  reps              Int
+  rir               Int             @default(1)
+  rpe               Float           @default(9.0)
+  alFallo           Boolean         @default(false)
+  completado        Boolean         @default(false)
+
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@map("sets")
+}
