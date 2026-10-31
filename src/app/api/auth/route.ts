@@ -8,11 +8,12 @@ const SUPABASE_ANON_KEY =
 const serverSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export async function POST(req: NextRequest) {
+  const timestamp = new Date().toISOString();
   try {
     const body = await req.json();
     const { action, email, password, fullName } = body;
 
-    console.log(`[AUTH API] Action: ${action}, Email: ${email}`);
+    console.log(`[AUTH-DIAGNOSTIC ${timestamp}] Action: ${action} | Email: ${email}`);
 
     if (action === "SIGNUP") {
       const { data, error } = await serverSupabase.auth.signUp({
@@ -24,11 +25,23 @@ export async function POST(req: NextRequest) {
       });
 
       if (error) {
-        console.error("[AUTH API SIGNUP ERROR]", error);
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        console.error(`[AUTH-DIAGNOSTIC-ERROR ${timestamp}] SIGNUP failed for ${email}:`, error);
+        return NextResponse.json(
+          {
+            error: error.message,
+            diagnostic: {
+              status: error.status,
+              code: error.code || (error as any).name,
+              details: error.message,
+              supabaseUrl: SUPABASE_URL,
+            },
+          },
+          { status: 400 }
+        );
       }
 
-      return NextResponse.json({ data });
+      console.log(`[AUTH-DIAGNOSTIC-SUCCESS ${timestamp}] User registered successfully:`, data.user?.id);
+      return NextResponse.json({ data, success: true });
     }
 
     if (action === "LOGIN") {
@@ -38,18 +51,36 @@ export async function POST(req: NextRequest) {
       });
 
       if (error) {
-        console.error("[AUTH API LOGIN ERROR]", error);
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        console.error(`[AUTH-DIAGNOSTIC-ERROR ${timestamp}] LOGIN failed for ${email}:`, error);
+        return NextResponse.json(
+          {
+            error: error.message,
+            diagnostic: {
+              status: error.status,
+              code: error.code,
+              details: error.message,
+              supabaseUrl: SUPABASE_URL,
+            },
+          },
+          { status: 400 }
+        );
       }
 
-      return NextResponse.json({ data });
+      console.log(`[AUTH-DIAGNOSTIC-SUCCESS ${timestamp}] User logged in successfully:`, data.user?.id);
+      return NextResponse.json({ data, success: true });
     }
 
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
   } catch (err: any) {
-    console.error("[AUTH API EXCEPTION]", err);
+    console.error(`[AUTH-DIAGNOSTIC-FATAL ${timestamp}] Unexpected error:`, err);
     return NextResponse.json(
-      { error: err?.message || "Internal server error" },
+      {
+        error: err?.message || "Error interno del servidor",
+        diagnostic: {
+          fatal: true,
+          stack: err?.stack,
+        },
+      },
       { status: 500 }
     );
   }

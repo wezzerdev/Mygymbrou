@@ -57,7 +57,8 @@ export default function AuthModal({
       const result = await res.json();
 
       if (!res.ok || result.error) {
-        throw new Error(result.error || "Error al procesar la solicitud con Supabase");
+        const diagInfo = result.diagnostic ? ` [Diag: ${JSON.stringify(result.diagnostic)}]` : "";
+        throw new Error((result.error || "Error al procesar la solicitud con Supabase") + diagInfo);
       }
 
       if (result.data?.session) {
