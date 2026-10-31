@@ -194,9 +194,13 @@ export default function CalendarSplitModule({
 }: CalendarSplitModuleProps) {
   const [viewMode, setViewMode] = useState<"WEEK" | "MONTH">("WEEK");
   const [splitType, setSplitType] = useState<"PPL" | "UPPER_LOWER">("PPL");
-  const [schedule, setSchedule] = useState<CalendarDayPlan[]>(
-    INITIAL_WEEK_SCHEDULE
-  );
+  const [schedule, setSchedule] = useState<CalendarDayPlan[]>(() => {
+    try {
+      const saved = localStorage.getItem("mygymbrou_calendar_schedule");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_WEEK_SCHEDULE.map((d) => ({ ...d, completado: false }));
+  });
 
   // Estado del Calendario Mensual
   const [monthIdx, setMonthIdx] = useState<number>(1); // Octubre 2026 por defecto
@@ -266,11 +270,15 @@ export default function CalendarSplitModule({
   };
 
   const toggleDayCompleted = (dayId: string) => {
-    setSchedule((prev) =>
-      prev.map((d) =>
+    setSchedule((prev) => {
+      const updated = prev.map((d) =>
         d.id === dayId ? { ...d, completado: !d.completado } : d
-      )
-    );
+      );
+      try {
+        localStorage.setItem("mygymbrou_calendar_schedule", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   // Funciones para editar cualquier día del Mes
@@ -406,7 +414,7 @@ export default function CalendarSplitModule({
                 Racha Activa
               </span>
               <span className="mt-0.5 font-mono text-lg sm:text-xl font-black text-zinc-950 dark:text-zinc-50">
-                4 Días 🔥
+                {completedWeekCount > 0 ? `${completedWeekCount} Días 🔥` : "0 Días"}
               </span>
             </div>
             <Flame className="h-5 w-5 text-amber-500 hidden sm:block" />

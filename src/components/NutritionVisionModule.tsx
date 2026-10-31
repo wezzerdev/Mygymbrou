@@ -22,7 +22,13 @@ import {
 
 export default function NutritionVisionModule() {
   const [goalMode, setGoalMode] = useState<"DEFICIT" | "MAINTENANCE" | "SURPLUS">("DEFICIT");
-  const [mealsToday, setMealsToday] = useState<MealEntry[]>(INITIAL_MEALS_TODAY);
+  const [mealsToday, setMealsToday] = useState<MealEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem("mygymbrou_user_meals_today");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
   const [showScanner, setShowScanner] = useState<boolean>(true);
 
   const goalTargets = {
@@ -127,7 +133,11 @@ export default function NutritionVisionModule() {
       }),
     };
 
-    setMealsToday((prev) => [...prev, newMeal]);
+    const updated = [...mealsToday, newMeal];
+    setMealsToday(updated);
+    try {
+      localStorage.setItem("mygymbrou_user_meals_today", JSON.stringify(updated));
+    } catch {}
     setSavedToast(`Plato guardado en ${mealTypeToSave} (+${scannedTotals.kcal} kcal)`);
     setTimeout(() => setSavedToast(null), 4000);
   };
@@ -478,8 +488,15 @@ export default function NutritionVisionModule() {
           </h3>
         </div>
 
-        <div className="space-y-3">
-          {mealsToday.map((meal) => {
+        {mealsToday.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 p-8 text-center bg-zinc-50/50 dark:bg-[#151518]/50">
+            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              Aún no has registrado comidas hoy. Escanea tu primer plato con la cámara IA arriba o guárdalo directamente para iniciar tus macros de hoy.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {mealsToday.map((meal) => {
             const totalKcal = meal.items.reduce((a, b) => a + b.kcal, 0);
             const totalProt = meal.items
               .reduce((a, b) => a + b.proteinas, 0)
@@ -513,7 +530,8 @@ export default function NutritionVisionModule() {
               </div>
             );
           })}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

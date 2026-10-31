@@ -150,17 +150,15 @@ function buildWorkoutFromRoutine(
 
     const sets = Array.from({ length: setsCount }, (_, sIdx) => {
       const setNum = sIdx + 1;
-      const isFirst = setNum === 1;
-      const isWarmupOrFirst = isFirst;
       return {
         setNum,
-        pesoAnterior: `${baseW} kg × ${baseR}`,
-        pesoKg: isFirst ? baseW : baseW > 0 ? baseW + (setNum > 2 ? 5 : 2.5) : 0,
-        reps: isFirst ? baseR + 1 : baseR,
-        rir: isFirst ? 2 : setNum === 2 ? 1 : 0,
-        rpe: isFirst ? 8 : setNum === 2 ? 9 : 9.5,
+        pesoAnterior: "—",
+        pesoKg: 0,
+        reps: 10,
+        rir: 2,
+        rpe: 8,
         alFallo: false,
-        completado: isWarmupOrFirst && idx === 0,
+        completado: false,
       };
     });
 
@@ -295,14 +293,12 @@ export default function GymLiveModule({
   };
 
   const buildSetsForExercise = (ex: ExerciseItem) => {
-    const baseW = ex.pesoAnteriorKg;
-    const baseR = ex.repsAnteriores;
     return [
       {
         setNum: 1,
-        pesoAnterior: `${baseW} kg × ${baseR}`,
-        pesoKg: baseW,
-        reps: baseR + 1,
+        pesoAnterior: "—",
+        pesoKg: 0,
+        reps: 10,
         rir: 2,
         rpe: 8,
         alFallo: false,
@@ -310,9 +306,9 @@ export default function GymLiveModule({
       },
       {
         setNum: 2,
-        pesoAnterior: `${baseW} kg × ${baseR}`,
-        pesoKg: baseW > 0 ? baseW + 2.5 : 0,
-        reps: baseR,
+        pesoAnterior: "—",
+        pesoKg: 0,
+        reps: 10,
         rir: 1,
         rpe: 9,
         alFallo: false,
@@ -320,9 +316,9 @@ export default function GymLiveModule({
       },
       {
         setNum: 3,
-        pesoAnterior: `${baseW} kg × ${Math.max(6, baseR - 1)}`,
-        pesoKg: baseW > 0 ? baseW + 2.5 : 0,
-        reps: baseR,
+        pesoAnterior: "—",
+        pesoKg: 0,
+        reps: 10,
         rir: 0,
         rpe: 9.5,
         alFallo: false,
@@ -848,27 +844,20 @@ export default function GymLiveModule({
                 ANATOMICAL_SPRITE_CATALOG[activeVisualId] ||
                 ANATOMICAL_SPRITE_CATALOG["press-banca-inclinado-mancuernas"];
               return (
-                <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
-                  <div className="flex flex-wrap items-center gap-3 text-zinc-600 dark:text-zinc-400">
-                    <span className="inline-flex items-center gap-1.5 font-medium text-zinc-800 dark:text-zinc-200">
-                      <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
-                      {spriteInfo.primaryLabel}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 font-normal">
-                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
-                      {spriteInfo.secondaryLabel}
-                    </span>
-                  </div>
+                <div className="flex items-center justify-between gap-2 px-1 text-xs">
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium truncate">
+                    {spriteInfo.primaryLabel} · {spriteInfo.secondaryLabel}
+                  </span>
 
                   <button
                     type="button"
                     onClick={() => setShowStepByStepGuide((prev) => !prev)}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-[#A3E635] transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-[#A3E635] transition-colors shrink-0"
                   >
                     <span>
                       {showStepByStepGuide
                         ? "Ocultar pasos"
-                        : `Cómo hacerlo (${displayedSteps.length} pasos)`}
+                        : `Técnica (${displayedSteps.length} pasos)`}
                     </span>
                     {showStepByStepGuide ? (
                       <ChevronUp className="h-3.5 w-3.5" />

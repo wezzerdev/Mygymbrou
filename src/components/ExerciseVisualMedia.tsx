@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Pause, Play, Columns2, Film, Camera, Box, Sparkles, Home } from "lucide-react";
-import { Exercise3DViewer } from "./three/Exercise3DViewer";
-import { EXERCISE_SCENES_3D } from "./three/ExerciseScenes3D";
+import { Pause, Play, Columns2, Film, Home } from "lucide-react";
 
 interface ExerciseDiagramProps {
   exerciseId: string;
@@ -1052,13 +1050,11 @@ export function ExerciseExecutionVisual({
     ANATOMICAL_SPRITE_CATALOG[exerciseId] ||
     ANATOMICAL_SPRITE_CATALOG["press-banca-inclinado-mancuernas"];
 
-  const has3D = Boolean(EXERCISE_SCENES_3D[exerciseId]);
   const isHome = Boolean(spec.isHomeExercise || spec.customImageUrl);
 
-  type ViewMode = "3D_STUDIO" | "HD_IMAGE" | "ANATOMY_2_POSES" | "VIDEO_GIF";
+  type ViewMode = "HD_IMAGE" | "ANATOMY_2_POSES" | "VIDEO_GIF";
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (isHome) return "HD_IMAGE";
-    if (has3D) return "3D_STUDIO";
     return "VIDEO_GIF";
   });
 
@@ -1066,17 +1062,15 @@ export function ExerciseExecutionVisual({
   const [paused, setPaused] = useState<boolean>(false);
   const [activeFrame, setActiveFrame] = useState<0 | 1>(0);
 
-  // Reset view mode and errors when exercise changes
+  // Sincronizar modo al cambiar de ejercicio
   useEffect(() => {
     setGifFailed(false);
     if (isHome) {
       setViewMode("HD_IMAGE");
-    } else if (has3D) {
-      setViewMode("3D_STUDIO");
     } else {
       setViewMode("VIDEO_GIF");
     }
-  }, [exerciseId, isHome, has3D]);
+  }, [exerciseId, isHome]);
 
   const alignedFrames = useAlignedExerciseFrames(spec.sheetUrl, spec.row);
 
@@ -1137,32 +1131,17 @@ export function ExerciseExecutionVisual({
       role="img"
       aria-label={`Demostración de ${spec.badge}`}
     >
-      {/* Lienzo Visual Despejado con Fondo Dark Studio */}
-      <div className="relative flex-1 min-h-0 w-full flex items-center justify-center bg-gradient-to-b from-[#09090b] via-[#111114] to-[#09090b] overflow-hidden">
-        {viewMode === "3D_STUDIO" && has3D ? (
-          <Exercise3DViewer exerciseId={exerciseId} />
-        ) : viewMode === "HD_IMAGE" && spec.customImageUrl ? (
-          <div className="relative w-full h-full flex items-center justify-center p-2 bg-[#09090b]">
-            <img
-              src={spec.customImageUrl}
-              alt={spec.badge}
-              className="max-h-full max-w-full rounded-xl object-contain shadow-2xl border border-zinc-800/80"
-              draggable={false}
-            />
-            {spec.isHomeExercise && (
-              <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-lg bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 border border-emerald-500/40 shadow-lg text-emerald-400 text-xs font-semibold">
-                <Home className="h-3.5 w-3.5" />
-                <span>En Casa · Sin Instrumentos</span>
-              </div>
-            )}
-            <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
-              <span className="rounded-md bg-zinc-950/80 backdrop-blur-md px-2 py-0.5 text-[10px] text-zinc-300 border border-zinc-800">
-                {spec.movementCue}
-              </span>
-            </div>
-          </div>
+      {/* Lienzo Visual 100% Despejado: Cero texto flotante encimado */}
+      <div className="relative flex-1 min-h-0 w-full flex items-center justify-center bg-gradient-to-b from-[#09090b] via-[#101014] to-[#09090b] overflow-hidden p-2">
+        {viewMode === "HD_IMAGE" && spec.customImageUrl ? (
+          <img
+            src={spec.customImageUrl}
+            alt={spec.badge}
+            className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl border border-zinc-800/80"
+            draggable={false}
+          />
         ) : viewMode === "VIDEO_GIF" && !gifFailed ? (
-          <div className="w-full h-full flex items-center justify-center p-2 bg-[#09090b]">
+          <div className="w-full h-full flex items-center justify-center">
             {!paused ? (
               <img
                 src={spec.gifUrl}
@@ -1174,18 +1153,25 @@ export function ExerciseExecutionVisual({
             ) : alignedFrames ? (
               <img
                 src={alignedFrames[1]}
-                alt={`${spec.badge} - Pausa Anatómica`}
+                alt={`${spec.badge} - Pausa`}
                 className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
                 draggable={false}
               />
-            ) : null}
+            ) : (
+              <img
+                src={spec.gifUrl}
+                alt={spec.badge}
+                className="max-h-full max-w-full object-contain"
+                draggable={false}
+              />
+            )}
           </div>
         ) : (
-          /* Vista de Lámina Anatómica HD (Inicio y Contracción) */
-          <div className="w-full h-full grid grid-cols-2 items-center bg-[#09090b] p-3 gap-2">
+          /* Vista de 2 Poses Anatómicas (Inicio y Contracción) */
+          <div className="w-full h-full grid grid-cols-2 items-center gap-2 p-1">
             {alignedFrames && (
               <>
-                <div className="h-full w-full flex items-center justify-center rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-2">
+                <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2">
                   <img
                     src={alignedFrames[0]}
                     alt={`${spec.badge} - Inicio`}
@@ -1193,11 +1179,11 @@ export function ExerciseExecutionVisual({
                     draggable={false}
                   />
                 </div>
-                <div className="h-full w-full flex items-center justify-center rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-2">
+                <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2">
                   <img
                     src={alignedFrames[1]}
                     alt={`${spec.badge} - Contracción`}
-                    className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_16px_rgba(255,42,85,0.2)]"
+                    className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
                     draggable={false}
                   />
                 </div>
@@ -1207,100 +1193,56 @@ export function ExerciseExecutionVisual({
         )}
       </div>
 
-      {/* Barra Inferior Fuera de la imagen con controles limpios */}
-      <div className="h-9 shrink-0 border-t border-zinc-800 bg-[#121214] px-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-400">
+      {/* Barra Inferior Limpia: Solo controles esenciales fuera de la imagen */}
+      <div className="h-9 shrink-0 border-t border-zinc-800/80 bg-[#121215] px-3 flex items-center justify-between">
+        <div>
           {viewMode === "VIDEO_GIF" ? (
             <button
               type="button"
               onClick={() => setPaused((prev) => !prev)}
-              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-zinc-300 hover:bg-zinc-800 transition-colors"
-              title={paused ? "Reanudar movimiento" : "Pausar movimiento"}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
+              title={paused ? "Reanudar animación" : "Pausar animación"}
             >
               {paused ? (
                 <>
-                  <Play className="h-3 w-3 fill-current text-[#A3E635]" />
+                  <Play className="h-3.5 w-3.5 text-[#A3E635] fill-current" />
                   <span>Reanudar</span>
                 </>
               ) : (
                 <>
-                  <Pause className="h-3 w-3" />
+                  <Pause className="h-3.5 w-3.5" />
                   <span>Pausar</span>
                 </>
               )}
             </button>
-          ) : viewMode === "3D_STUDIO" ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-[#A3E635] font-semibold">
-              <Box className="h-3.5 w-3.5" />
-              <span>Estudio 3D Biomecánico (Arrastra para rotar 360°)</span>
-            </span>
-          ) : viewMode === "HD_IMAGE" ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Guía Técnica En Casa</span>
-            </span>
           ) : (
-            <div className="flex items-center gap-3 text-[11px]">
-              <span
-                className={
-                  activeFrame === 0
-                    ? "text-zinc-100 font-semibold"
-                    : "text-zinc-400"
-                }
-              >
-                1. Inicio
-              </span>
-              <span className="text-zinc-600">→</span>
-              <span
-                className={
-                  activeFrame === 1
-                    ? "text-[#A3E635] font-semibold"
-                    : "text-zinc-400"
-                }
-              >
-                2. Contracción
-              </span>
-            </div>
+            <span className="text-xs text-zinc-400 font-medium">
+              {viewMode === "HD_IMAGE" ? "Guía en Casa" : "Inicio y Contracción"}
+            </span>
           )}
         </div>
 
-        {/* Selector de Modos de Visualización */}
-        <div className="flex items-center gap-0.5 rounded-lg bg-zinc-900 p-0.5 border border-zinc-800">
-          {has3D && (
-            <button
-              type="button"
-              onClick={() => setViewMode("3D_STUDIO")}
-              className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
-                viewMode === "3D_STUDIO"
-                  ? "bg-zinc-800 text-[#A3E635] shadow-sm font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              <Box className="h-3 w-3" />
-              <span>Estudio 3D</span>
-            </button>
-          )}
-
+        {/* Alternador simple y limpio */}
+        <div className="flex items-center gap-1 rounded-lg bg-zinc-900 p-0.5 border border-zinc-800">
           {spec.customImageUrl ? (
             <button
               type="button"
               onClick={() => setViewMode("HD_IMAGE")}
-              className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
                 viewMode === "HD_IMAGE"
-                  ? "bg-zinc-800 text-[#A3E635] shadow-sm font-semibold"
+                  ? "bg-zinc-800 text-[#A3E635] shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <Sparkles className="h-3 w-3" />
-              <span>Ilustración</span>
+              Ilustración
             </button>
           ) : (
             <button
               type="button"
               onClick={() => setViewMode("VIDEO_GIF")}
-              className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
                 viewMode === "VIDEO_GIF"
-                  ? "bg-zinc-800 text-zinc-100 shadow-sm font-semibold"
+                  ? "bg-zinc-800 text-[#A3E635] shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
@@ -1312,14 +1254,14 @@ export function ExerciseExecutionVisual({
           <button
             type="button"
             onClick={() => setViewMode("ANATOMY_2_POSES")}
-            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+            className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
               viewMode === "ANATOMY_2_POSES"
-                ? "bg-zinc-800 text-[#A3E635] shadow-sm font-semibold"
+                ? "bg-zinc-800 text-[#A3E635] shadow-sm"
                 : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
             <Columns2 className="h-3 w-3" />
-            <span>Músculos</span>
+            <span>2 Poses</span>
           </button>
         </div>
       </div>

@@ -17,8 +17,24 @@ import InfoTooltip from "@/components/InfoTooltip";
 import SectionGuideCard from "@/components/SectionGuideCard";
 
 export default function MetricsStatsModule() {
-  const [metricsList, setMetricsList] =
-    useState<BodyMetricEntry[]>(INITIAL_BODY_METRICS);
+  const [metricsList, setMetricsList] = useState<BodyMetricEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem("mygymbrou_user_body_metrics");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      {
+        fecha: new Date().toISOString().slice(0, 10),
+        etiqueta: "Hoy",
+        pesoKg: 75,
+        grasaPct: 15,
+        pechoCm: 98,
+        brazoCm: 34,
+        cinturaCm: 80,
+        piernaCm: 55,
+      },
+    ];
+  });
   const [selectedStrengthKey, setSelectedStrengthKey] = useState<string>(
     "press-banca-barra"
   );
@@ -49,7 +65,11 @@ export default function MetricsStatsModule() {
       cinturaCm: parseFloat(newWaist) || latestMetric.cinturaCm,
       piernaCm: latestMetric.piernaCm,
     };
-    setMetricsList((prev) => [...prev.slice(1), entry]);
+    const updated = [...metricsList, entry];
+    setMetricsList(updated);
+    try {
+      localStorage.setItem("mygymbrou_user_body_metrics", JSON.stringify(updated));
+    } catch {}
     setShowLogModal(false);
   };
 
