@@ -106,6 +106,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "press-banca-inclinado-mancuernas": {
     sheetUrl: "/exercises/modern_sheet_01.png",
     row: "top",
+    customImageUrl: "/exercises/gym_incline_db_press.jpg",
+    customFrames: [
+      "/exercises/neon_s01_top_1.jpg",
+      "/exercises/neon_s01_top_2.jpg",
+      "/exercises/gym_incline_db_press.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/pectorals/dumbbell-incline-bench-press.gif",
     badge: "PRESS INCLINADO MANCUERNAS 30°",
@@ -138,6 +144,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "cruces-polea-alta-baja": {
     sheetUrl: "/exercises/modern_sheet_05.png",
     row: "bottom",
+    customImageUrl: "/exercises/gym_cable_crossover_3.jpg",
+    customFrames: [
+      "/exercises/gym_cable_crossover_1.jpg",
+      "/exercises/gym_cable_crossover_2.jpg",
+      "/exercises/gym_cable_crossover_3.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/pectorals/cable-low-fly.gif",
     badge: "CRUCES EN POLEA DE ABAJO A ARRIBA",
@@ -172,6 +184,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "press-militar-barra": {
     sheetUrl: "/exercises/modern_sheet_01.png",
     row: "top",
+    customImageUrl: "/exercises/gym_military_press.jpg",
+    customFrames: [
+      "/exercises/neon_s04_top_1.jpg",
+      "/exercises/neon_s04_top_2.jpg",
+      "/exercises/gym_military_press.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/delts/barbell-standing-wide-military-press.gif",
     badge: "PRESS MILITAR CON BARRA DE PIE",
@@ -216,6 +234,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "elevaciones-laterales-mancuernas": {
     sheetUrl: "/exercises/modern_sheet_10.png",
     row: "bottom",
+    customImageUrl: "/exercises/gym_lateral_raises.jpg",
+    customFrames: [
+      "/exercises/neon_s06_top_1.jpg",
+      "/exercises/neon_s06_top_2.jpg",
+      "/exercises/gym_lateral_raises.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/delts/dumbbell-lateral-raise.gif",
     badge: "ELEVACIONES LATERALES CON MANCUERNAS",
@@ -238,6 +262,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "extension-triceps-katana-polea": {
     sheetUrl: "/exercises/modern_sheet_11.png",
     row: "bottom",
+    customImageUrl: "/exercises/gym_overhead_triceps_2.jpg",
+    customFrames: [
+      "/exercises/neon_s07_top_1.jpg",
+      "/exercises/gym_overhead_triceps_1.jpg",
+      "/exercises/gym_overhead_triceps_2.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/triceps/cable-overhead-triceps-extension-rope-attachment.gif",
     badge: "EXTENSIÓN DE TRÍCEPS TRASNUCA POLEA",
@@ -270,6 +300,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "jalon-al-pecho-neutro": {
     sheetUrl: "/exercises/modern_sheet_14.png",
     row: "top",
+    customImageUrl: "/exercises/gym_lat_pulldown.jpg",
+    customFrames: [
+      "/exercises/neon_s08_bottom_1.jpg",
+      "/exercises/neon_s08_bottom_2.jpg",
+      "/exercises/gym_lat_pulldown.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/lats/cable-pulldown-pro-lat-bar.gif",
     badge: "JALÓN AL PECHO EN POLEA ALTA",
@@ -304,6 +340,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "remo-pecho-apoyado-maquina": {
     sheetUrl: "/exercises/modern_sheet_14.png",
     row: "top",
+    customImageUrl: "/exercises/gym_chest_row.jpg",
+    customFrames: [
+      "/exercises/neon_s10_top_1.jpg",
+      "/exercises/neon_s10_top_2.jpg",
+      "/exercises/gym_chest_row.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/upper-back/lever-seated-row.gif",
     badge: "REMO CON PECHO APOYADO EN MÁQUINA",
@@ -348,6 +390,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "curl-biceps-barra-z": {
     sheetUrl: "/exercises/modern_sheet_17.png",
     row: "bottom",
+    customImageUrl: "/exercises/gym_bicep_curl.jpg",
+    customFrames: [
+      "/exercises/neon_s12_top_1.jpg",
+      "/exercises/neon_s12_top_2.jpg",
+      "/exercises/gym_bicep_curl.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/biceps/ez-barbell-curl.gif",
     badge: "CURL DE BÍCEPS CON BARRA Z",
@@ -402,6 +450,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "sentadilla-hack-pro": {
     sheetUrl: "/exercises/modern_sheet_14.png",
     row: "bottom",
+    customImageUrl: "/exercises/gym_hack_squat.jpg",
+    customFrames: [
+      "/exercises/neon_s14_bottom_1.jpg",
+      "/exercises/neon_s14_bottom_2.jpg",
+      "/exercises/gym_hack_squat.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/glutes/sled-hack-squat.gif",
     badge: "SENTADILLA HACK PROFUNDA 45°",
@@ -436,6 +490,12 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "peso-muerto-rumano-barra": {
     sheetUrl: "/exercises/modern_sheet_17.png",
     row: "top",
+    customImageUrl: "/exercises/gym_romanian_deadlift.jpg",
+    customFrames: [
+      "/exercises/neon_s16_top_1.jpg",
+      "/exercises/neon_s16_top_2.jpg",
+      "/exercises/gym_romanian_deadlift.jpg",
+    ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/glutes/barbell-romanian-deadlift.gif",
     badge: "PESO MUERTO RUMANO CON BARRA (RDL)",
@@ -1042,6 +1102,22 @@ function useAlignedExerciseFrames(
   return frames;
 }
 
+function getThreePhaseNeonFrames(spec: AnatomicalSpriteSpec): [string, string, string] {
+  if (spec.customFrames && spec.customFrames.length >= 3) {
+    return [spec.customFrames[0], spec.customFrames[1], spec.customFrames[2]];
+  }
+  const match = spec.sheetUrl.match(/(\d{2})/);
+  const num = match ? match[1] : "01";
+  const base1 = `/exercises/neon_s${num}_${spec.row}_1.jpg`;
+  const base2 = `/exercises/neon_s${num}_${spec.row}_2.jpg`;
+  const base3 = `/exercises/neon_s${num}_${spec.row}_3.jpg`;
+
+  if (spec.customImageUrl) {
+    return [spec.customImageUrl, base1, base3];
+  }
+  return [base1, base2, base3];
+}
+
 export function ExerciseExecutionVisual({
   exerciseId,
   compact = false,
@@ -1051,93 +1127,47 @@ export function ExerciseExecutionVisual({
     ANATOMICAL_SPRITE_CATALOG[exerciseId] ||
     ANATOMICAL_SPRITE_CATALOG["press-banca-inclinado-mancuernas"];
 
-  const isHome = Boolean(spec.isHomeExercise || spec.customImageUrl);
-  const freeDbId = spec.freeExerciseDbId || FREE_EXERCISE_DB_ID_BY_SLUG[exerciseId];
-  const realPhoto0 = freeDbId ? `${FREE_EXERCISE_DB_CDN_BASE}/${freeDbId}/0.jpg` : null;
-  const realPhoto1 = freeDbId ? `${FREE_EXERCISE_DB_CDN_BASE}/${freeDbId}/1.jpg` : null;
-  const hasRealPhotos = Boolean(realPhoto0 && realPhoto1);
-
-  // Secuencia de fotogramas disponibles (hasta 3 fotogramas: Inicio, Rango, Contracción)
-  const sequenceFrames: string[] = spec.customFrames && spec.customFrames.length > 0
-    ? spec.customFrames
-    : hasRealPhotos
-    ? [realPhoto0!, realPhoto1!]
-    : spec.customImageUrl
-    ? [spec.customImageUrl]
-    : [];
-
-  const hasSequence = sequenceFrames.length > 1;
+  // Todas las variantes cuentan ahora con su secuencia de 3 fases en estilo Dark Studio Neón (#A3E635)
+  const sequenceFrames: [string, string, string] = getThreePhaseNeonFrames(spec);
 
   type ViewMode = "FLUID_ANIMATION" | "MULTI_POSES" | "STATIC_HD";
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (spec.customImageUrl && !hasSequence) return "STATIC_HD";
-    return "FLUID_ANIMATION";
-  });
+  const [viewMode, setViewMode] = useState<ViewMode>("FLUID_ANIMATION");
 
-  const [gifFailed, setGifFailed] = useState<boolean>(false);
   const [paused, setPaused] = useState<boolean>(false);
   const [activeFrameIndex, setActiveFrameIndex] = useState<number>(0);
 
   // Sincronizar modo al cambiar de ejercicio
   useEffect(() => {
-    setGifFailed(false);
     setActiveFrameIndex(0);
-    if (spec.customImageUrl && !spec.customFrames?.length) {
-      setViewMode("STATIC_HD");
-    } else {
-      setViewMode("FLUID_ANIMATION");
-    }
-  }, [exerciseId, spec.customImageUrl, spec.customFrames]);
+    setViewMode("FLUID_ANIMATION");
+  }, [exerciseId]);
 
-  const alignedFrames = useAlignedExerciseFrames(spec.sheetUrl, spec.row);
+  const activeAnimFrames: string[] = sequenceFrames;
 
-  // Fotogramas para la animación
-  const activeAnimFrames: string[] = sequenceFrames.length > 0
-    ? sequenceFrames
-    : alignedFrames
-    ? [alignedFrames[0], alignedFrames[1]]
-    : [];
-
-  // Animación fluida cíclica entre los 2 o 3 fotogramas (ej: 0 -> 1 -> 2 -> 1 -> 0)
+  // Animación fluida cíclica entre los 3 fotogramas (1 -> 2 -> 3)
   useEffect(() => {
     if (!paused && activeAnimFrames.length > 1) {
-      const stepMs = activeAnimFrames.length >= 3 ? 900 : 1150;
       const timer = setInterval(() => {
         setActiveFrameIndex((prev) => (prev + 1) % activeAnimFrames.length);
-      }, stepMs);
+      }, 1100);
       return () => clearInterval(timer);
     }
   }, [paused, activeAnimFrames.length]);
 
   // Miniatura en las tarjetas de "Máquinas e Instrumentos Alternativos"
   if (compact) {
-    const compactThumb =
-      spec.customImageUrl ||
-      (spec.customFrames && spec.customFrames[0]) ||
-      realPhoto0 ||
-      spec.gifUrl;
+    const compactThumb = spec.customImageUrl || sequenceFrames[0];
 
     return (
       <div
-        className={`relative w-full h-full bg-[#0c0c0e] flex items-center justify-center overflow-hidden select-none ${className}`}
+        className={`relative w-full h-full bg-[#090d16] flex items-center justify-center overflow-hidden select-none ${className}`}
       >
-        {compactThumb ? (
-          <img
-            src={compactThumb}
-            alt={spec.badge}
-            className="h-full w-full object-cover"
-            draggable={false}
-          />
-        ) : alignedFrames ? (
-          <img
-            src={alignedFrames[0]}
-            alt={spec.badge}
-            className="h-full w-full object-contain p-1"
-            draggable={false}
-          />
-        ) : (
-          <div className="h-full w-full bg-zinc-900 animate-pulse" />
-        )}
+        <img
+          src={compactThumb}
+          alt={spec.badge}
+          className="h-full w-full object-cover"
+          draggable={false}
+        />
 
         {spec.isHomeExercise && (
           <div className="absolute bottom-1 left-1 rounded bg-emerald-500/90 text-zinc-950 font-bold px-1 py-0.2 text-[8px] shadow-sm flex items-center gap-0.5">
@@ -1172,22 +1202,12 @@ export function ExerciseExecutionVisual({
           />
         ) : viewMode === "FLUID_ANIMATION" ? (
           <div className="w-full h-full flex flex-col items-center justify-center relative">
-            {activeAnimFrames.length > 0 ? (
-              <img
-                src={activeAnimFrames[activeFrameIndex % activeAnimFrames.length]}
-                alt={`${spec.badge} - ${phaseLabels[activeFrameIndex % phaseLabels.length]}`}
-                className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl border border-zinc-800/80 transition-all duration-300"
-                draggable={false}
-              />
-            ) : !gifFailed ? (
-              <img
-                src={spec.gifUrl}
-                alt={spec.badge}
-                onError={() => setGifFailed(true)}
-                className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
-                draggable={false}
-              />
-            ) : null}
+            <img
+              src={activeAnimFrames[activeFrameIndex % activeAnimFrames.length]}
+              alt={`${spec.badge} - ${phaseLabels[activeFrameIndex % phaseLabels.length]}`}
+              className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl border border-zinc-800/80 transition-all duration-300"
+              draggable={false}
+            />
           </div>
         ) : (
           /* Vista de Poses Desglosadas (2 o 3 Poses lado a lado) */
