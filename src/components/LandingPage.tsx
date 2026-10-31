@@ -252,11 +252,11 @@ export default function LandingPage({ onOpenAuth }: LandingPageProps) {
                     </span>
                   </div>
 
-                  <div className="relative h-60 sm:h-72 w-full rounded-xl bg-zinc-900 flex items-center justify-center overflow-hidden border border-zinc-800/60">
+                  <div className="relative h-60 sm:h-72 w-full rounded-xl bg-zinc-950 flex items-center justify-center overflow-hidden border border-zinc-800/60">
                     <img
-                      src="/exercises/modern_sheet_01.png"
-                      alt="Demostración Biomecánica"
-                      className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500"
+                      src="/exercises/home_single_leg_hip_thrust.jpg"
+                      alt="Demostración Biomecánica En Casa y Gym"
+                      className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                     
@@ -264,10 +264,10 @@ export default function LandingPage({ onOpenAuth }: LandingPageProps) {
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
                         <Activity className="w-3.5 h-3.5 text-[#A3E635]" />
-                        <span className="font-semibold text-white">Vista: Lámina Anatómica HD</span>
+                        <span className="font-semibold text-white">Vista: Biomecánica HD · En Casa & Gym</span>
                       </div>
                       <div className="bg-[#A3E635] text-black px-2.5 py-1 rounded-md font-bold text-[11px] shadow">
-                        Músculo Activo: Gluteus Maximus
+                        Músculo Activo: Glúteo Mayor & Isquios
                       </div>
                     </div>
                   </div>

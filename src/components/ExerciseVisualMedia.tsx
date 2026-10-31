@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Pause, Play, Columns2, Film, Camera } from "lucide-react";
+import { Pause, Play, Columns2, Film, Camera, Box, Sparkles, Home } from "lucide-react";
+import { Exercise3DViewer } from "./three/Exercise3DViewer";
+import { EXERCISE_SCENES_3D } from "./three/ExerciseScenes3D";
 
 interface ExerciseDiagramProps {
   exerciseId: string;
@@ -18,6 +20,8 @@ export interface AnatomicalSpriteSpec {
   primaryLabel: string;
   secondaryLabel: string;
   movementCue: string;
+  customImageUrl?: string;
+  isHomeExercise?: boolean;
 }
 
 export const FREE_EXERCISE_DB_CDN_BASE =
@@ -642,6 +646,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "flexiones-declinadas-casa": {
     sheetUrl: "/exercises/modern_sheet_18.png",
     row: "top",
+    customImageUrl: "/exercises/home_decline_pushups.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/pectorals/decline-push-up.gif",
     freeExerciseDbId: "Decline_Push-Up",
@@ -653,6 +659,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "flexiones-abiertas-casa": {
     sheetUrl: "/exercises/modern_sheet_18.png",
     row: "bottom",
+    customImageUrl: "/exercises/home_pushups.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/pectorals/wide-hand-push-up.gif",
     freeExerciseDbId: "Pushups",
@@ -664,6 +672,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "pike-pushups-casa": {
     sheetUrl: "/exercises/modern_sheet_01.png",
     row: "top",
+    customImageUrl: "/exercises/home_pike_pushups.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/delts/pike-push-up.gif",
     freeExerciseDbId: "Handstand_Push-Ups",
@@ -675,6 +685,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "elevaciones-laterales-mochila-casa": {
     sheetUrl: "/exercises/modern_sheet_13.png",
     row: "bottom",
+    customImageUrl: "/exercises/home_lateral_raises_backpack.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/delts/dumbbell-lateral-raise.gif",
     freeExerciseDbId: "Side_Lateral_Raise",
@@ -686,6 +698,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "fondos-silla-triceps-casa": {
     sheetUrl: "/exercises/modern_sheet_02.png",
     row: "top",
+    customImageUrl: "/exercises/home_chair_tricep_dips.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/triceps/bench-dip-on-floor.gif",
     freeExerciseDbId: "Bench_Dips",
@@ -697,6 +711,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "remo-toalla-puerta-casa": {
     sheetUrl: "/exercises/modern_sheet_09.png",
     row: "top",
+    customImageUrl: "/exercises/home_inverted_row_table.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/upper-back/inverted-row.gif",
     freeExerciseDbId: "Inverted_Row",
@@ -708,6 +724,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "remo-mochila-unilateral-casa": {
     sheetUrl: "/exercises/modern_sheet_09.png",
     row: "bottom",
+    customImageUrl: "/exercises/home_backpack_row.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/upper-back/dumbbell-one-arm-bent-over-row.gif",
     freeExerciseDbId: "One-Arm_Dumbbell_Row",
@@ -719,6 +737,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "curl-biceps-mochila-casa": {
     sheetUrl: "/exercises/modern_sheet_11.png",
     row: "bottom",
+    customImageUrl: "/exercises/home_backpack_bicep_curl.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/biceps/dumbbell-hammer-curl.gif",
     freeExerciseDbId: "Hammer_Curls",
@@ -730,6 +750,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "vuelos-posteriores-casa": {
     sheetUrl: "/exercises/modern_sheet_13.png",
     row: "bottom",
+    customImageUrl: "/exercises/home_lateral_raises_backpack.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/delts/dumbbell-incline-rear-lateral-raise.gif",
     freeExerciseDbId: "Seated_Bent-Over_Rear_Delt_Raise",
@@ -741,6 +763,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "sentadilla-bulgara-casa": {
     sheetUrl: "/exercises/modern_sheet_14.png",
     row: "bottom",
+    customImageUrl: "/exercises/home_bulgarian_split_squat.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/quads/dumbbell-single-leg-split-squat.gif",
     freeExerciseDbId: "Split_Squat_with_Dumbbells",
@@ -752,6 +776,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "puente-gluteo-unilateral-casa": {
     sheetUrl: "/exercises/modern_sheet_17.png",
     row: "top",
+    customImageUrl: "/exercises/home_single_leg_hip_thrust.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/glutes/barbell-glute-bridge-two-legs-on-bench-male.gif",
     freeExerciseDbId: "Single_Leg_Glute_Bridge",
@@ -763,6 +789,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "curl-femoral-deslizante-casa": {
     sheetUrl: "/exercises/modern_sheet_18.png",
     row: "top",
+    customImageUrl: "/exercises/home_sliding_leg_curl.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/hamstrings/lever-lying-leg-curl.gif",
     freeExerciseDbId: "Russian_Leg_Curl",
@@ -774,17 +802,21 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "sentadilla-pared-isometrica-casa": {
     sheetUrl: "/exercises/modern_sheet_18.png",
     row: "bottom",
+    customImageUrl: "/exercises/home_bulgarian_split_squat.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/quads/sissy-squat.gif",
     freeExerciseDbId: "Wall_Squat",
     badge: "SENTADILLA SISSY / PARED EN CASA",
     primaryLabel: "Cuádriceps Completo",
     secondaryLabel: "Recto Femoral",
-    movementCue: "Talones elevados sobre un libro grueso; baja con el torso recto",
+    movementCue: "Talones elevados o espalda en pared; baja con el torso recto",
   },
   "flexiones-clasicas-casa": {
     sheetUrl: "/exercises/modern_sheet_01.png",
     row: "top",
+    customImageUrl: "/exercises/home_pushups.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/pectorals/push-up.gif",
     freeExerciseDbId: "Pushups",
@@ -796,6 +828,8 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "plancha-abdominal-casa": {
     sheetUrl: "/exercises/modern_sheet_13.png",
     row: "bottom",
+    customImageUrl: "/exercises/home_plank.jpg",
+    isHomeExercise: true,
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/abs/front-plank-with-twist.gif",
     freeExerciseDbId: "Plank",
@@ -1014,77 +1048,84 @@ export function ExerciseExecutionVisual({
   compact = false,
   className = "",
 }: ExerciseDiagramProps) {
-  // 3 modos visuales: Video GIF continuo | Lámina Anatómica HD | Fotos Reales (free-exercise-db 0.jpg y 1.jpg)
-  const [viewMode, setViewMode] = useState<
-    "VIDEO_GIF" | "ANATOMY_2_POSES" | "REAL_PHOTOS_DB"
-  >("VIDEO_GIF");
-  const [gifFailed, setGifFailed] = useState<boolean>(false);
-  const [realPhotosFailed, setRealPhotosFailed] = useState<boolean>(false);
-  const [paused, setPaused] = useState<boolean>(false);
-  const [activeFrame, setActiveFrame] = useState<0 | 1>(0);
-
   const spec =
     ANATOMICAL_SPRITE_CATALOG[exerciseId] ||
     ANATOMICAL_SPRITE_CATALOG["press-banca-inclinado-mancuernas"];
 
-  const [photo0Url, photo1Url] = getFreeExerciseDbPhotoUrls(
-    exerciseId,
-    spec.freeExerciseDbId
-  );
+  const has3D = Boolean(EXERCISE_SCENES_3D[exerciseId]);
+  const isHome = Boolean(spec.isHomeExercise || spec.customImageUrl);
 
-  // Resetear estados de error cuando cambia el ejercicio
+  type ViewMode = "3D_STUDIO" | "HD_IMAGE" | "ANATOMY_2_POSES" | "VIDEO_GIF";
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (isHome) return "HD_IMAGE";
+    if (has3D) return "3D_STUDIO";
+    return "VIDEO_GIF";
+  });
+
+  const [gifFailed, setGifFailed] = useState<boolean>(false);
+  const [paused, setPaused] = useState<boolean>(false);
+  const [activeFrame, setActiveFrame] = useState<0 | 1>(0);
+
+  // Reset view mode and errors when exercise changes
   useEffect(() => {
     setGifFailed(false);
-    setRealPhotosFailed(false);
-  }, [exerciseId]);
+    if (isHome) {
+      setViewMode("HD_IMAGE");
+    } else if (has3D) {
+      setViewMode("3D_STUDIO");
+    } else {
+      setViewMode("VIDEO_GIF");
+    }
+  }, [exerciseId, isHome, has3D]);
 
   const alignedFrames = useAlignedExerciseFrames(spec.sheetUrl, spec.row);
 
   useEffect(() => {
-    if (
-      !paused &&
-      (gifFailed ||
-        viewMode === "ANATOMY_2_POSES" ||
-        viewMode === "REAL_PHOTOS_DB")
-    ) {
+    if (!paused && viewMode === "ANATOMY_2_POSES") {
       const timer = setInterval(() => {
         setActiveFrame((prev) => (prev === 0 ? 1 : 0));
       }, 1150);
       return () => clearInterval(timer);
     }
-  }, [paused, gifFailed, viewMode]);
+  }, [paused, viewMode]);
 
-  // Miniatura en las tarjetas de "Máquinas e Instrumentos Alternativos" (Movimiento fluido de video GIF)
+  // Miniatura en las tarjetas de "Máquinas e Instrumentos Alternativos"
   if (compact) {
     return (
       <div
-        className={`relative w-full h-full bg-white flex items-center justify-center overflow-hidden select-none ${className}`}
+        className={`relative w-full h-full bg-[#0c0c0e] flex items-center justify-center overflow-hidden select-none ${className}`}
       >
-        {!gifFailed ? (
+        {spec.customImageUrl ? (
+          <img
+            src={spec.customImageUrl}
+            alt={spec.badge}
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
+        ) : !gifFailed ? (
           <img
             src={spec.gifUrl}
             alt={spec.badge}
             onError={() => setGifFailed(true)}
-            className="h-full w-full object-contain p-0.5"
-            draggable={false}
-          />
-        ) : !realPhotosFailed ? (
-          <img
-            src={activeFrame === 0 ? photo0Url : photo1Url}
-            alt={spec.badge}
-            onError={() => setRealPhotosFailed(true)}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain p-1 filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
             draggable={false}
           />
         ) : alignedFrames ? (
           <img
             src={alignedFrames[activeFrame]}
             alt={spec.badge}
-            className="h-full w-full object-contain p-0.5"
+            className="h-full w-full object-contain p-1"
             draggable={false}
           />
         ) : (
-          <div className="h-full w-full bg-white animate-pulse" />
+          <div className="h-full w-full bg-zinc-900 animate-pulse" />
+        )}
+
+        {spec.isHomeExercise && (
+          <div className="absolute bottom-1 left-1 rounded bg-emerald-500/90 text-zinc-950 font-bold px-1 py-0.2 text-[8px] shadow-sm flex items-center gap-0.5">
+            <Home className="h-2 w-2" />
+            <span>En Casa</span>
+          </div>
         )}
       </div>
     );
@@ -1092,71 +1133,59 @@ export function ExerciseExecutionVisual({
 
   return (
     <div
-      className={`w-full h-full bg-white dark:bg-[#121214] flex flex-col select-none overflow-hidden ${className}`}
+      className={`w-full h-full bg-[#09090b] flex flex-col select-none overflow-hidden ${className}`}
       role="img"
-      aria-label={`Demostración en movimiento de ${spec.badge}`}
+      aria-label={`Demostración de ${spec.badge}`}
     >
-      {/* Lienzo Visual 100% Limpio (sin botones ni etiquetas tapando la figura) */}
-      <div className="relative flex-1 min-h-0 w-full flex items-center justify-center bg-white overflow-hidden">
-        {viewMode === "VIDEO_GIF" && !gifFailed ? (
-          <div className="w-full h-full flex items-center justify-center p-2">
+      {/* Lienzo Visual Despejado con Fondo Dark Studio */}
+      <div className="relative flex-1 min-h-0 w-full flex items-center justify-center bg-gradient-to-b from-[#09090b] via-[#111114] to-[#09090b] overflow-hidden">
+        {viewMode === "3D_STUDIO" && has3D ? (
+          <Exercise3DViewer exerciseId={exerciseId} />
+        ) : viewMode === "HD_IMAGE" && spec.customImageUrl ? (
+          <div className="relative w-full h-full flex items-center justify-center p-2 bg-[#09090b]">
+            <img
+              src={spec.customImageUrl}
+              alt={spec.badge}
+              className="max-h-full max-w-full rounded-xl object-contain shadow-2xl border border-zinc-800/80"
+              draggable={false}
+            />
+            {spec.isHomeExercise && (
+              <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-lg bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 border border-emerald-500/40 shadow-lg text-emerald-400 text-xs font-semibold">
+                <Home className="h-3.5 w-3.5" />
+                <span>En Casa · Sin Instrumentos</span>
+              </div>
+            )}
+            <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
+              <span className="rounded-md bg-zinc-950/80 backdrop-blur-md px-2 py-0.5 text-[10px] text-zinc-300 border border-zinc-800">
+                {spec.movementCue}
+              </span>
+            </div>
+          </div>
+        ) : viewMode === "VIDEO_GIF" && !gifFailed ? (
+          <div className="w-full h-full flex items-center justify-center p-2 bg-[#09090b]">
             {!paused ? (
               <img
                 src={spec.gifUrl}
                 alt={spec.badge}
                 onError={() => setGifFailed(true)}
-                className="max-h-full max-w-full object-contain"
+                className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
                 draggable={false}
               />
             ) : alignedFrames ? (
               <img
                 src={alignedFrames[1]}
                 alt={`${spec.badge} - Pausa Anatómica`}
-                className="max-h-full max-w-full object-contain"
+                className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
                 draggable={false}
               />
             ) : null}
           </div>
-        ) : viewMode === "REAL_PHOTOS_DB" && !realPhotosFailed ? (
-          /* Vista de Fotos Reales 1-2 de yuhonas/free-exercise-db (100% visibles sin botones encima) */
-          <div className="w-full h-full grid grid-cols-2 items-center bg-zinc-950 p-1.5 gap-1.5">
-            <div
-              className={`h-full w-full overflow-hidden rounded-lg bg-zinc-900 flex items-center justify-center border transition-all ${
-                activeFrame === 0
-                  ? "border-[#A3E635]"
-                  : "border-zinc-800 opacity-90"
-              }`}
-            >
-              <img
-                src={photo0Url}
-                alt={`${spec.badge} - Foto Real Inicio`}
-                onError={() => setRealPhotosFailed(true)}
-                className="h-full w-full object-contain"
-                draggable={false}
-              />
-            </div>
-            <div
-              className={`h-full w-full overflow-hidden rounded-lg bg-zinc-900 flex items-center justify-center border transition-all ${
-                activeFrame === 1
-                  ? "border-[#A3E635]"
-                  : "border-zinc-800 opacity-90"
-              }`}
-            >
-              <img
-                src={photo1Url}
-                alt={`${spec.badge} - Foto Real Final`}
-                onError={() => setRealPhotosFailed(true)}
-                className="h-full w-full object-contain"
-                draggable={false}
-              />
-            </div>
-          </div>
         ) : (
-          /* Vista de Lámina Anatómica HD Moderna (Fondo Studio Dark con Fibras Carmesí Neón) */
+          /* Vista de Lámina Anatómica HD (Inicio y Contracción) */
           <div className="w-full h-full grid grid-cols-2 items-center bg-[#09090b] p-3 gap-2">
             {alignedFrames && (
               <>
-                <div className="h-full w-full flex items-center justify-center rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-2">
+                <div className="h-full w-full flex items-center justify-center rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-2">
                   <img
                     src={alignedFrames[0]}
                     alt={`${spec.badge} - Inicio`}
@@ -1164,11 +1193,11 @@ export function ExerciseExecutionVisual({
                     draggable={false}
                   />
                 </div>
-                <div className="h-full w-full flex items-center justify-center rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-2">
+                <div className="h-full w-full flex items-center justify-center rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-2">
                   <img
                     src={alignedFrames[1]}
                     alt={`${spec.badge} - Contracción`}
-                    className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_16px_rgba(255,42,85,0.15)]"
+                    className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_16px_rgba(255,42,85,0.2)]"
                     draggable={false}
                   />
                 </div>
@@ -1178,19 +1207,19 @@ export function ExerciseExecutionVisual({
         )}
       </div>
 
-      {/* Barra Inferior Minimalista FUERA de la imagen (nunca tapa manos, barra ni pies) */}
-      <div className="h-9 shrink-0 border-t border-zinc-200/80 dark:border-zinc-800 bg-zinc-50 dark:bg-[#141417] px-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+      {/* Barra Inferior Fuera de la imagen con controles limpios */}
+      <div className="h-9 shrink-0 border-t border-zinc-800 bg-[#121214] px-2.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-[11px] font-medium text-zinc-400">
           {viewMode === "VIDEO_GIF" ? (
             <button
               type="button"
               onClick={() => setPaused((prev) => !prev)}
-              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition-colors"
+              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-zinc-300 hover:bg-zinc-800 transition-colors"
               title={paused ? "Reanudar movimiento" : "Pausar movimiento"}
             >
               {paused ? (
                 <>
-                  <Play className="h-3 w-3 fill-current" />
+                  <Play className="h-3 w-3 fill-current text-[#A3E635]" />
                   <span>Reanudar</span>
                 </>
               ) : (
@@ -1200,22 +1229,32 @@ export function ExerciseExecutionVisual({
                 </>
               )}
             </button>
+          ) : viewMode === "3D_STUDIO" ? (
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-[#A3E635] font-semibold">
+              <Box className="h-3.5 w-3.5" />
+              <span>Estudio 3D Biomecánico (Arrastra para rotar 360°)</span>
+            </span>
+          ) : viewMode === "HD_IMAGE" ? (
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Guía Técnica En Casa</span>
+            </span>
           ) : (
             <div className="flex items-center gap-3 text-[11px]">
               <span
                 className={
                   activeFrame === 0
-                    ? "text-zinc-900 dark:text-zinc-100 font-semibold"
+                    ? "text-zinc-100 font-semibold"
                     : "text-zinc-400"
                 }
               >
                 1. Inicio
               </span>
-              <span className="text-zinc-300 dark:text-zinc-700">→</span>
+              <span className="text-zinc-600">→</span>
               <span
                 className={
                   activeFrame === 1
-                    ? "text-emerald-700 dark:text-[#A3E635] font-semibold"
+                    ? "text-[#A3E635] font-semibold"
                     : "text-zinc-400"
                 }
               >
@@ -1225,45 +1264,62 @@ export function ExerciseExecutionVisual({
           )}
         </div>
 
-        {/* Selector limpio de vista */}
-        <div className="flex items-center gap-0.5 rounded-lg bg-zinc-200/75 dark:bg-zinc-900 p-0.5">
-          <button
-            type="button"
-            onClick={() => setViewMode("VIDEO_GIF")}
-            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
-              viewMode === "VIDEO_GIF"
-                ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-            }`}
-          >
-            <Film className="h-3 w-3" />
-            <span>Animación</span>
-          </button>
+        {/* Selector de Modos de Visualización */}
+        <div className="flex items-center gap-0.5 rounded-lg bg-zinc-900 p-0.5 border border-zinc-800">
+          {has3D && (
+            <button
+              type="button"
+              onClick={() => setViewMode("3D_STUDIO")}
+              className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+                viewMode === "3D_STUDIO"
+                  ? "bg-zinc-800 text-[#A3E635] shadow-sm font-semibold"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <Box className="h-3 w-3" />
+              <span>Estudio 3D</span>
+            </button>
+          )}
+
+          {spec.customImageUrl ? (
+            <button
+              type="button"
+              onClick={() => setViewMode("HD_IMAGE")}
+              className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+                viewMode === "HD_IMAGE"
+                  ? "bg-zinc-800 text-[#A3E635] shadow-sm font-semibold"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <Sparkles className="h-3 w-3" />
+              <span>Ilustración</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setViewMode("VIDEO_GIF")}
+              className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+                viewMode === "VIDEO_GIF"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm font-semibold"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <Film className="h-3 w-3" />
+              <span>Animación</span>
+            </button>
+          )}
 
           <button
             type="button"
             onClick={() => setViewMode("ANATOMY_2_POSES")}
             className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
               viewMode === "ANATOMY_2_POSES"
-                ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                ? "bg-zinc-800 text-[#A3E635] shadow-sm font-semibold"
+                : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
             <Columns2 className="h-3 w-3" />
             <span>Músculos</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode("REAL_PHOTOS_DB")}
-            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
-              viewMode === "REAL_PHOTOS_DB"
-                ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-            }`}
-          >
-            <Camera className="h-3 w-3" />
-            <span>Fotos</span>
           </button>
         </div>
       </div>

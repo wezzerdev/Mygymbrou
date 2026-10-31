@@ -814,7 +814,7 @@ export default function GymLiveModule({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 rounded-2xl bg-zinc-50/70 dark:bg-[#18181B]/70 border border-zinc-200/70 dark:border-zinc-800/80 p-3.5 sm:p-4">
           {/* Izquierda (6 cols): Imagen/Video sin ningún botón encimado */}
           <div className="lg:col-span-6 flex flex-col justify-between space-y-2">
-            <div className="h-64 sm:h-72 w-full overflow-hidden rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white">
+            <div className="h-64 sm:h-72 w-full overflow-hidden rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-950 dark:bg-[#09090b]">
               <ExerciseExecutionVisual exerciseId={activeVisualId} />
             </div>
 
@@ -894,7 +894,7 @@ export default function GymLiveModule({
                       : "border-zinc-200/80 bg-white/60 hover:bg-white dark:border-zinc-800 dark:bg-[#121214]/50"
                   }`}
                 >
-                  <div className="h-12 w-20 shrink-0 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+                  <div className="h-12 w-20 shrink-0 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-950">
                     <ExerciseExecutionVisual
                       exerciseId={currentCatalogEx.id}
                       compact
@@ -938,7 +938,7 @@ export default function GymLiveModule({
                           : "border-zinc-200/80 bg-white/60 hover:bg-white dark:border-zinc-800 dark:bg-[#121214]/50"
                       }`}
                     >
-                      <div className="h-12 w-20 shrink-0 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <div className="h-12 w-20 shrink-0 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-950">
                         <ExerciseExecutionVisual exerciseId={sub.id} compact />
                       </div>
                       <div className="flex-1 min-w-0">

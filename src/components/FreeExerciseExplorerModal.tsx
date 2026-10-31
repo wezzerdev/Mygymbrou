@@ -13,6 +13,7 @@ import {
   Camera,
   Sparkles,
   CheckCircle2,
+  Home,
 } from "lucide-react";
 import {
   EXERCISE_CATALOG,
@@ -27,6 +28,7 @@ import {
 import {
   FREE_EXERCISE_DB_CDN_BASE,
   registerCustomExerciseVisual,
+  ANATOMICAL_SPRITE_CATALOG,
 } from "@/components/ExerciseVisualMedia";
 
 interface RawFreeExerciseDbRecord {
@@ -603,44 +605,58 @@ export default function FreeExerciseExplorerModal({
               </div>
             </div>
 
-            {/* Fotos 0.jpg (Inicio) y 1.jpg (Contracción) de yuhonas/free-exercise-db */}
-            <div className="grid grid-cols-2 gap-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 p-3">
-              <div
-                className={`relative h-44 sm:h-52 overflow-hidden rounded-xl border transition-all ${
-                  activePhotoStep === 0
-                    ? "border-[#A3E635] ring-2 ring-[#A3E635]/30"
-                    : "border-zinc-800 opacity-90"
-                }`}
-              >
+            {/* Foto de Demostración: Ilustración en Casa HD o Fotos 0.jpg / 1.jpg */}
+            {ANATOMICAL_SPRITE_CATALOG[selectedItem.id]?.customImageUrl ? (
+              <div className="relative h-56 sm:h-64 w-full overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#09090b] flex items-center justify-center p-2 shadow-xl">
                 <img
-                  src={photo0}
-                  alt={`${selectedItem.nombre} - Posición Inicial (0.jpg)`}
-                  className="h-full w-full object-cover"
+                  src={ANATOMICAL_SPRITE_CATALOG[selectedItem.id]?.customImageUrl}
+                  alt={selectedItem.nombre}
+                  className="h-full w-full object-contain rounded-xl"
                 />
-                <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-zinc-950/90 border border-zinc-700 px-2 py-1 text-[10px] font-extrabold text-white">
-                  <Camera className="h-3 w-3 text-[#A3E635]" />
-                  1. Posición Inicial (0.jpg)
+                <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-lg bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 border border-emerald-500/40 text-[10px] font-bold text-emerald-400">
+                  <Home className="h-3 w-3" />
+                  Guía En Casa (Sin Instrumentos)
                 </span>
               </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 p-3">
+                <div
+                  className={`relative h-44 sm:h-52 overflow-hidden rounded-xl border transition-all ${
+                    activePhotoStep === 0
+                      ? "border-[#A3E635] ring-2 ring-[#A3E635]/30"
+                      : "border-zinc-800 opacity-90"
+                  }`}
+                >
+                  <img
+                    src={photo0}
+                    alt={`${selectedItem.nombre} - Posición Inicial (0.jpg)`}
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-zinc-950/90 border border-zinc-700 px-2 py-1 text-[10px] font-extrabold text-white">
+                    <Camera className="h-3 w-3 text-[#A3E635]" />
+                    1. Posición Inicial (0.jpg)
+                  </span>
+                </div>
 
-              <div
-                className={`relative h-44 sm:h-52 overflow-hidden rounded-xl border transition-all ${
-                  activePhotoStep === 1
-                    ? "border-[#A3E635] ring-2 ring-[#A3E635]/30"
-                    : "border-zinc-800 opacity-90"
-                }`}
-              >
-                <img
-                  src={photo1}
-                  alt={`${selectedItem.nombre} - Contracción Final (1.jpg)`}
-                  className="h-full w-full object-cover"
-                />
-                <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md bg-zinc-950/90 border border-[#A3E635]/50 px-2 py-1 text-[10px] font-extrabold text-[#A3E635]">
-                  <CheckCircle2 className="h-3 w-3" />
-                  2. Contracción Final (1.jpg)
-                </span>
+                <div
+                  className={`relative h-44 sm:h-52 overflow-hidden rounded-xl border transition-all ${
+                    activePhotoStep === 1
+                      ? "border-[#A3E635] ring-2 ring-[#A3E635]/30"
+                      : "border-zinc-800 opacity-90"
+                  }`}
+                >
+                  <img
+                    src={photo1}
+                    alt={`${selectedItem.nombre} - Contracción Final (1.jpg)`}
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md bg-zinc-950/90 border border-[#A3E635]/50 px-2 py-1 text-[10px] font-extrabold text-[#A3E635]">
+                    <CheckCircle2 className="h-3 w-3" />
+                    2. Contracción Final (1.jpg)
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Músculos Primarios y Secundarios */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
