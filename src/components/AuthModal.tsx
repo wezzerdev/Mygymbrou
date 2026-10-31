@@ -42,29 +42,35 @@ export default function AuthModal({
     setLoading(true);
 
     try {
-      if (mode === "SIGNUP") {
-        const { data, error } = await supabase.auth.signUp({
+      // Usamos el endpoint API directo del servidor para evitar bloqueos de CORS o variables de navegador
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: mode,
           email,
           password,
-          options: {
-            data: { full_name: fullName },
-          },
-        });
-        if (error) throw error;
-        if (data.user) {
-          onSuccess(data.user);
-        }
+          fullName: mode === "SIGNUP" ? fullName : undefined,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || result.error) {
+        throw new Error(result.error || "Error al procesar la solicitud con Supabase");
+      }
+
+      if (result.data?.session) {
+        await supabase.auth.setSession(result.data.session);
+      }
+
+      if (result.data?.user) {
+        onSuccess(result.data.user);
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        if (data.user) {
-          onSuccess(data.user);
-        }
+        throw new Error("No se pudo obtener el usuario. Revisa tu confirmación de correo o credenciales.");
       }
     } catch (err: any) {
+      console.error("[AUTH ERROR]", err);
       setErrorMsg(err.message || "Error al autenticar con Supabase");
     } finally {
       setLoading(false);
