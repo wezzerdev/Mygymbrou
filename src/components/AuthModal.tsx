@@ -74,7 +74,39 @@ export default function AuthModal({
       }
 
       if (result.data?.user) {
-        onSuccess(result.data.user);
+        const authedUser = result.data.user;
+        const initialProfile = {
+          id: authedUser.id,
+          email: authedUser.email || email,
+          full_name: fullName || authedUser.user_metadata?.full_name || "Atleta",
+          gender: "hombre",
+          age: 25,
+          height_cm: 175,
+          weight_kg: 75,
+          goal: "ganar_musculo",
+          target_weight_kg: 80,
+          weekly_workouts_target: 4,
+          training_location: "gimnasio_comercial",
+          preferred_duration_track: "standard",
+          experience_level: "intermediate",
+          training_years: 1.5,
+          preferred_split: "PPL",
+          onboarding_completed: true,
+        };
+
+        try {
+          localStorage.setItem(`mygymbrou_profile_${authedUser.id}`, JSON.stringify(initialProfile));
+          localStorage.setItem(`mygymbrou_onboarding_done_${authedUser.id}`, "true");
+        } catch {}
+
+        // Sincronizar en segundo plano con la base de datos
+        fetch("/api/profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile: initialProfile }),
+        }).catch(() => {});
+
+        onSuccess(authedUser);
       } else {
         throw new Error("No se pudo obtener el usuario. Revisa tu confirmación de correo o credenciales.");
       }

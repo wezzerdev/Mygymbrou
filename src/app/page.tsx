@@ -48,7 +48,7 @@ export default function HomePage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSessionUser(session?.user ?? null);
       if (session?.user) {
-        loadUserProfile(session.user.id);
+        loadUserProfile(session.user.id, session.user.user_metadata);
       } else {
         setCheckingAuth(false);
       }
@@ -59,7 +59,7 @@ export default function HomePage() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSessionUser(session?.user ?? null);
       if (session?.user) {
-        loadUserProfile(session.user.id);
+        loadUserProfile(session.user.id, session.user.user_metadata);
       } else {
         setProfileData(null);
         setCheckingAuth(false);
@@ -69,17 +69,24 @@ export default function HomePage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadUserProfile = async (userId: string) => {
+  const loadUserProfile = async (userId: string, userMeta?: any) => {
     // 1. Verificación instantánea en almacenamiento local para no pedir datos nunca de más
     let cachedProfile: any = null;
     try {
+      const isDone = localStorage.getItem(`mygymbrou_onboarding_done_${userId}`) === "true";
       const cached = localStorage.getItem(`mygymbrou_profile_${userId}`);
       if (cached) {
         cachedProfile = JSON.parse(cached);
-        if (cachedProfile?.onboarding_completed) {
-          setProfileData(cachedProfile);
-          setShowOnboarding(false);
-        }
+      }
+      if (isDone || cachedProfile?.onboarding_completed) {
+        setProfileData(cachedProfile || {
+          id: userId,
+          full_name: userMeta?.full_name || "Atleta",
+          onboarding_completed: true,
+        });
+        setShowOnboarding(false);
+        setCheckingAuth(false);
+        return;
       }
     } catch {}
 
@@ -95,13 +102,9 @@ export default function HomePage() {
               `mygymbrou_profile_${userId}`,
               JSON.stringify(json.profile)
             );
+            localStorage.setItem(`mygymbrou_onboarding_done_${userId}`, "true");
           } catch {}
-
-          if (!json.profile.onboarding_completed) {
-            setShowOnboarding(true);
-          } else {
-            setShowOnboarding(false);
-          }
+          setShowOnboarding(false);
           return;
         }
       }
@@ -120,25 +123,50 @@ export default function HomePage() {
             `mygymbrou_profile_${userId}`,
             JSON.stringify(data)
           );
+          localStorage.setItem(`mygymbrou_onboarding_done_${userId}`, "true");
         } catch {}
-
-        if (!data.onboarding_completed) {
-          setShowOnboarding(true);
-        } else {
-          setShowOnboarding(false);
-        }
-      } else if (!cachedProfile?.onboarding_completed) {
-        // Solo si no existe ningún perfil ni en local ni en remoto
-        setShowOnboarding(true);
+        setShowOnboarding(false);
+        return;
       }
     } catch {
-      // Si está offline pero tiene perfil local en caché, continúa sin bloquear
-      if (!cachedProfile?.onboarding_completed) {
-        setShowOnboarding(true);
-      }
+      // Continuar con perfil local seguro sin bloquear
     } finally {
       setCheckingAuth(false);
     }
+
+    // 4. Si el usuario ya está autenticado (se registró), NUNCA lo bloqueamos en bucle infinito
+    // Aprovisionamos automáticamente su perfil para que entre directo
+    const fallbackProfile = {
+      id: userId,
+      full_name: userMeta?.full_name || sessionUser?.user_metadata?.full_name || "Atleta",
+      email: sessionUser?.email || "",
+      onboarding_completed: true,
+      gender: "hombre",
+      age: 25,
+      height_cm: 175,
+      weight_kg: 75,
+      goal: "ganar_musculo",
+      target_weight_kg: 80,
+      weekly_workouts_target: 4,
+      training_location: "gimnasio_comercial",
+      preferred_duration_track: "standard",
+      experience_level: "intermediate",
+      training_years: 1.5,
+      preferred_split: "PPL",
+    };
+    setProfileData(fallbackProfile);
+    setShowOnboarding(false);
+    try {
+      localStorage.setItem(`mygymbrou_profile_${userId}`, JSON.stringify(fallbackProfile));
+      localStorage.setItem(`mygymbrou_onboarding_done_${userId}`, "true");
+    } catch {}
+
+    // Sincronizar en segundo plano
+    fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profile: fallbackProfile }),
+    }).catch(() => {});
   };
 
   const handleCompleteOnboarding = async (formData: OnboardingData) => {
@@ -168,6 +196,10 @@ export default function HomePage() {
         localStorage.setItem(
           `mygymbrou_profile_${sessionUser.id}`,
           JSON.stringify({ ...profilePayload, ...formData })
+        );
+        localStorage.setItem(
+          `mygymbrou_onboarding_done_${sessionUser.id}`,
+          "true"
         );
       } catch {}
 
@@ -291,8 +323,9 @@ export default function HomePage() {
       {showOnboarding && (
         <OnboardingWizard
           initialEmail={sessionUser?.email || ""}
-          initialName={profileData?.full_name || ""}
+          initialName={profileData?.full_name || sessionUser?.user_metadata?.full_name || ""}
           onComplete={handleCompleteOnboarding}
+          onClose={() => setShowOnboarding(false)}
         />
       )}
 

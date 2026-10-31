@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Award,
   Zap,
+  X,
 } from "lucide-react";
 
 export interface OnboardingData {
@@ -41,12 +42,14 @@ interface OnboardingWizardProps {
   initialEmail: string;
   initialName?: string;
   onComplete: (data: OnboardingData) => void;
+  onClose?: () => void;
 }
 
 export default function OnboardingWizard({
   initialEmail,
   initialName = "",
   onComplete,
+  onClose,
 }: OnboardingWizardProps) {
   const [step, setStep] = useState<number>(1);
   const totalSteps = 4;
@@ -67,14 +70,30 @@ export default function OnboardingWizard({
     preferredSplit: "PPL",
   });
 
+  const handleSkipOrClose = () => {
+    onComplete(formData);
+    if (onClose) onClose();
+  };
+
   const nextStep = () => setStep((s) => Math.min(totalSteps, s + 1));
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
-      <div className="w-full max-w-xl rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-[#121214] p-6 sm:p-8 shadow-2xl space-y-6">
+      <div className="w-full max-w-xl rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-[#121214] p-6 sm:p-8 shadow-2xl space-y-6 relative">
+        {/* Botón de cerrar / omitir directo en la esquina superior */}
+        <button
+          type="button"
+          onClick={handleSkipOrClose}
+          className="absolute top-5 right-5 h-8 w-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          title="Omitir y cerrar configuración"
+          aria-label="Cerrar configuración"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
         {/* Barra superior de pasos */}
-        <div className="space-y-2">
+        <div className="space-y-2 pr-8">
           <div className="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
             <span>Paso {step} de {totalSteps}</span>
             <span className="text-emerald-600 dark:text-[#A3E635]">
@@ -389,25 +408,33 @@ export default function OnboardingWizard({
         )}
 
         {/* Botones de navegación */}
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-200/80 dark:border-zinc-800">
-          {step > 1 ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-zinc-200/80 dark:border-zinc-800">
+          <div className="flex items-center gap-2">
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span>Atrás</span>
+              </button>
+            ) : null}
+
             <button
               type="button"
-              onClick={prevStep}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              onClick={handleSkipOrClose}
+              className="text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 underline transition-colors px-2 py-1"
             >
-              <ChevronLeft className="h-4 w-4" />
-              <span>Atrás</span>
+              Omitir por ahora
             </button>
-          ) : (
-            <div />
-          )}
+          </div>
 
           {step < totalSteps ? (
             <button
               type="button"
               onClick={nextStep}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 text-white dark:bg-[#A3E635] dark:text-black px-5 py-2.5 text-xs font-bold shadow hover:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 text-white dark:bg-[#A3E635] dark:text-black px-5 py-2.5 text-xs font-bold shadow hover:opacity-90 transition-opacity"
             >
               <span>Continuar</span>
               <ChevronRight className="h-4 w-4" />
@@ -416,7 +443,7 @@ export default function OnboardingWizard({
             <button
               type="button"
               onClick={() => onComplete(formData)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 text-white dark:bg-[#A3E635] dark:text-black px-6 py-2.5 text-xs font-bold shadow-lg hover:opacity-95"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 text-white dark:bg-[#A3E635] dark:text-black px-6 py-2.5 text-xs font-bold shadow-lg hover:opacity-95 transition-opacity"
             >
               <Sparkles className="h-4 w-4" />
               <span>¡Comenzar mi Entrenamiento!</span>
