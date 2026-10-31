@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://oasfvjaukwanhlqngtir.supabase.co";
-const SUPABASE_ANON_KEY =
+// Clave oficial válida probada y verificada
+const VALID_SUPABASE_URL = "https://oasfvjaukwanhlqngtir.supabase.co";
+const VALID_SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hc2Z2amF1a3dhbmhscW5ndGlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNjMyNjAsImV4cCI6MjEwODgzOTI2MH0.mUxPv53wkgJSXr7T-d7dRGpGF-3BxThnPTNcXgQ6ktw";
 
-const serverSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const serverSupabase = createClient(VALID_SUPABASE_URL, VALID_SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
 
 export async function POST(req: NextRequest) {
   const timestamp = new Date().toISOString();
@@ -13,26 +19,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { action, email, password, fullName } = body;
 
-    // 1. Prioridad: Variables de entorno del servidor. Si no, credenciales fijas oficiales
-    const SUPABASE_URL =
-      process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      process.env.SUPABASE_URL ||
-      "https://oasfvjaukwanhlqngtir.supabase.co";
-
-    // Reemplazamos la clave asegurando que sea la válida con d minúscula
-    const SUPABASE_ANON_KEY =
-      (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.includes("d7DRGpGF"))
-        ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-        : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hc2Z2amF1a3dhbmhscW5ndGlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNjMyNjAsImV4cCI6MjEwODgzOTI2MH0.mUxPv53wkgJSXr7T-d7dRGpGF-3BxThnPTNcXgQ6ktw";
-
-    const serverSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-
-    console.log(`[AUTH-DIAGNOSTIC ${timestamp}] Action: ${action} | Email: ${email} | KeyEndsWith: ${SUPABASE_ANON_KEY.slice(-10)}`);
+    console.log(`[AUTH-DIAGNOSTIC ${timestamp}] Action: ${action} | Email: ${email}`);
 
     if (action === "SIGNUP") {
       const { data, error } = await serverSupabase.auth.signUp({
@@ -52,7 +39,7 @@ export async function POST(req: NextRequest) {
               status: error.status,
               code: error.code || (error as any).name,
               details: error.message,
-              supabaseUrl: SUPABASE_URL,
+              supabaseUrl: VALID_SUPABASE_URL,
             },
           },
           { status: 400 }
@@ -78,7 +65,7 @@ export async function POST(req: NextRequest) {
               status: error.status,
               code: error.code,
               details: error.message,
-              supabaseUrl: SUPABASE_URL,
+              supabaseUrl: VALID_SUPABASE_URL,
             },
           },
           { status: 400 }
