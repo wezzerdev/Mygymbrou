@@ -11,6 +11,7 @@ import {
   Sparkles,
   Utensils,
 } from "lucide-react";
+import SectionGuideCard from "@/components/SectionGuideCard";
 import {
   STANDARDIZED_NUTRITION_DB,
   VISION_PRESET_PLATES,
@@ -149,6 +150,26 @@ export default function NutritionVisionModule() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Guía Rápida de la Sección */}
+      <SectionGuideCard
+        title="¿Cómo funciona el Módulo de Nutrición y Cámara IA?"
+        points={[
+          {
+            title: "Objetivo y Macros",
+            desc: "Alterna entre Déficit, Mantenimiento o Volumen para calibrar tus metas calóricas y de proteína.",
+          },
+          {
+            title: "Escaneo Visual IA",
+            desc: "Usa presets o fotos de platos para desglosar ingredientes, gramos y calorías al instante.",
+          },
+          {
+            title: "Registro 1-Click",
+            desc: "Ajusta las porciones con los botones rápidos +/- y añade a tu comida del día sin fricción.",
+          },
+        ]}
+        proTip="Ajustar los gramos manualmente mejora la precisión de tu balance calórico diario."
+      />
+
       {/* 1. Tarjeta Limpia de Resumen Diario (Estilo Fitia) */}
       <div className="rounded-3xl border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121214] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
         <div className="flex flex-wrap items-center justify-between gap-4">

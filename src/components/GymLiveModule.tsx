@@ -39,6 +39,8 @@ import {
 } from "@/components/ExerciseVisualMedia";
 import InfoTooltip from "@/components/InfoTooltip";
 import FreeExerciseExplorerModal from "@/components/FreeExerciseExplorerModal";
+import AdBanner from "@/components/AdBanner";
+import SectionGuideCard from "@/components/SectionGuideCard";
 
 interface GymLiveModuleProps {
   activeRoutineId: WorkoutRoutineTemplate["id"];
@@ -506,7 +508,30 @@ export default function GymLiveModule({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5">
+    <div className="max-w-4xl mx-auto space-y-4">
+      {/* Guía Rápida de Entrenamiento en Vivo */}
+      <SectionGuideCard
+        title="¿Cómo funciona el Entrenamiento en Vivo?"
+        points={[
+          {
+            title: "Registra tus Series",
+            desc: "Usa los botones +/- para peso y repeticiones. Toca 'Listo' para completar la serie y activar tu descanso.",
+          },
+          {
+            title: "Gimnasio o En Casa",
+            desc: "Alterna con 1 toque arriba entre máquinas de gym o variantes caseras con sillas, mochilas y toallas.",
+          },
+          {
+            title: "Estudio 3D Biomecánico",
+            desc: "Arrastra el modelo 3D para rotar 360°, ver la postura y las fibras musculares activadas en tiempo real.",
+          },
+        ]}
+        proTip="Toca tu marca anterior para copiarla directamente a la serie de hoy con un solo toque."
+      />
+
+      {/* Espacio Publicitario 320x50 Adsterra sin contorno */}
+      <AdBanner format="320x50" placementName="Publicidad · Gimnasio" />
+
       {/* 1. Cabecera Minimalista con Selector "Gimnasio / En Casa" de 1 Toque */}
       <div className="rounded-3xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-[#121214] p-5 sm:p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">

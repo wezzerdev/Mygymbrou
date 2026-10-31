@@ -21,6 +21,8 @@ import {
   WorkoutRoutineTemplate,
 } from "@/lib/fitness-data";
 import InfoTooltip from "@/components/InfoTooltip";
+import AdBanner from "@/components/AdBanner";
+import SectionGuideCard from "@/components/SectionGuideCard";
 
 interface CalendarSplitModuleProps {
   onLaunchRoutineInGym?: (routineId: WorkoutRoutineTemplate["id"]) => void;
@@ -423,6 +425,29 @@ export default function CalendarSplitModule({
           </div>
         </div>
 
+        {/* Guía Rápida Explicativa del Calendario */}
+        <SectionGuideCard
+          title="¿Para qué sirve este Calendario y cómo usarlo?"
+          points={[
+            {
+              title: "Organiza tu Semana",
+              desc: "Elige qué días entrenas Empuje, Tracción, Piernas o Descanso Activo con los selectores de cada día.",
+            },
+            {
+              title: "Sincroniza con 1 Toque",
+              desc: "Al marcar tu rutina de hoy, se carga automáticamente en el módulo de Gimnasio para empezar tu entrenamiento.",
+            },
+            {
+              title: "Prevención de Fatiga",
+              desc: "El sistema detecta automáticamente si acumulas 4 días de carga alta y te sugiere recuperación para no sobreentrenar.",
+            },
+          ]}
+          proTip="Si hoy estás fatigado, toca 'Descansar hoy' y el sistema equilibrará tus días restantes."
+        />
+
+        {/* Espacio Publicitario 320x50 Adsterra sin contorno */}
+        <AdBanner format="320x50" placementName="Publicidad · Calendario" />
+
         {/* =========================================================
             VISTA 1: SEMANA (TARJETAS RÁPIDAS + LISTA INTERACTIVA)
            ========================================================= */}
@@ -472,8 +497,8 @@ export default function CalendarSplitModule({
               </div>
             )}
 
-            {/* Mini-tira visual de los 7 días de la semana */}
-            <div className="mt-5 grid grid-cols-7 gap-1.5 sm:gap-2">
+            {/* Mini-tira visual de los 7 días de la semana (Responsive Swipeable en móvil) */}
+            <div className="mt-5 flex overflow-x-auto gap-2 pb-2 sm:grid sm:grid-cols-7 sm:gap-2 no-scrollbar snap-x">
               {schedule.map((day) => {
                 const matchedOpt =
                   DAY_ROUTINE_OPTIONS.find(
@@ -482,9 +507,9 @@ export default function CalendarSplitModule({
                 return (
                   <div
                     key={`strip-${day.id}`}
-                    className={`rounded-2xl border p-2.5 text-center transition-all ${
+                    className={`min-w-[76px] sm:min-w-0 snap-center flex-1 rounded-2xl border p-2.5 text-center transition-all ${
                       day.esHoy
-                        ? "border-2 border-zinc-950 dark:border-[#A3E635] bg-zinc-950 text-white dark:bg-[#18181B]"
+                        ? "border-2 border-zinc-950 dark:border-[#A3E635] bg-zinc-950 text-white dark:bg-[#18181B] shadow-md"
                         : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-[#141417]"
                     }`}
                   >

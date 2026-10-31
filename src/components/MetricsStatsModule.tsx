@@ -14,6 +14,7 @@ import {
   calculateMovingAverage7Days,
 } from "@/lib/fitness-data";
 import InfoTooltip from "@/components/InfoTooltip";
+import SectionGuideCard from "@/components/SectionGuideCard";
 
 export default function MetricsStatsModule() {
   const [metricsList, setMetricsList] =
@@ -87,6 +88,26 @@ export default function MetricsStatsModule() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Guía Rápida de la Sección */}
+      <SectionGuideCard
+        title="¿Cómo interpretar tus Métricas y Fuerza?"
+        points={[
+          {
+            title: "Promedio Móvil 7D",
+            desc: "Elimina las fluctuaciones temporales de agua y glucógeno mostrando tu cambio de peso corporal real.",
+          },
+          {
+            title: "Progreso 1RM Estimado",
+            desc: "Monitorea tu sobrecarga progresiva en los ejercicios compuestos clave a lo largo de las semanas.",
+          },
+          {
+            title: "Medidas Corporales",
+            desc: "Registra cintura, brazos y porcentaje de grasa para verificar tu recomposición corporal.",
+          },
+        ]}
+        proTip="Pésate en ayunas al despertar para que los datos del promedio móvil mantengan la máxima consistencia."
+      />
+
       {/* 1. Tarjeta de Peso Corporal y Promedio Móvil de 7 Días */}
       <div className="rounded-3xl border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121214] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
         <div className="flex flex-wrap items-center justify-between gap-4">

@@ -12,6 +12,36 @@ const serverSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   },
 });
 
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json({ error: "Falta userId" }, { status: 400 });
+    }
+
+    const { data, error } = await serverSupabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("[PROFILE-GET WARNING]", error.message);
+      return NextResponse.json({ profile: null, error: error.message }, { status: 200 });
+    }
+
+    return NextResponse.json({ profile: data, success: true });
+  } catch (err: any) {
+    console.error("[PROFILE-GET FATAL]", err);
+    return NextResponse.json(
+      { error: err?.message || "Error al obtener perfil" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -27,7 +57,7 @@ export async function POST(req: NextRequest) {
       .from("profiles")
       .upsert(profile, { onConflict: "id" })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("[PROFILE-UPSERT ERROR]", error);
@@ -35,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("[PROFILE-UPSERT SUCCESS]", data?.id);
-    return NextResponse.json({ data, success: true });
+    return NextResponse.json({ data: data || profile, success: true });
   } catch (err: any) {
     console.error("[PROFILE-UPSERT FATAL]", err);
     return NextResponse.json(

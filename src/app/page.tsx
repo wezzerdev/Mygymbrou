@@ -11,6 +11,7 @@ import {
   Timer,
   LogOut,
   User,
+  Sparkles,
 } from "lucide-react";
 import GymLiveModule from "@/components/GymLiveModule";
 import NutritionVisionModule from "@/components/NutritionVisionModule";
@@ -20,6 +21,7 @@ import FloatingRestTimer from "@/components/FloatingRestTimer";
 import LandingPage from "@/components/LandingPage";
 import AuthModal from "@/components/AuthModal";
 import OnboardingWizard, { OnboardingData } from "@/components/OnboardingWizard";
+import SystemTourModal from "@/components/SystemTourModal";
 import { WorkoutRoutineTemplate } from "@/lib/fitness-data";
 import { supabase } from "@/lib/supabase";
 
@@ -30,10 +32,11 @@ export default function HomePage() {
   const [profileData, setProfileData] = useState<any>(null);
   const [checkingAuth, setCheckingAuth] = useState<boolean>(true);
 
-  // Modales de Auth y Onboarding
+  // Modales de Auth, Onboarding y Tour
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<"LOGIN" | "SIGNUP">("LOGIN");
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
+  const [showTour, setShowTour] = useState<boolean>(false);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("LIVE_GYM");
   const [isDark, setIsDark] = useState<boolean>(true);
@@ -67,23 +70,72 @@ export default function HomePage() {
   }, []);
 
   const loadUserProfile = async (userId: string) => {
+    // 1. Verificación instantánea en almacenamiento local para no pedir datos nunca de más
+    let cachedProfile: any = null;
     try {
+      const cached = localStorage.getItem(`mygymbrou_profile_${userId}`);
+      if (cached) {
+        cachedProfile = JSON.parse(cached);
+        if (cachedProfile?.onboarding_completed) {
+          setProfileData(cachedProfile);
+          setShowOnboarding(false);
+        }
+      }
+    } catch {}
+
+    // 2. Consulta al endpoint seguro de servidor /api/profile
+    try {
+      const res = await fetch(`/api/profile?userId=${encodeURIComponent(userId)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.profile && json.profile.id) {
+          setProfileData(json.profile);
+          try {
+            localStorage.setItem(
+              `mygymbrou_profile_${userId}`,
+              JSON.stringify(json.profile)
+            );
+          } catch {}
+
+          if (!json.profile.onboarding_completed) {
+            setShowOnboarding(true);
+          } else {
+            setShowOnboarding(false);
+          }
+          return;
+        }
+      }
+
+      // 3. Consulta de contingencia directa con cliente Supabase
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
+
       if (!error && data) {
         setProfileData(data);
+        try {
+          localStorage.setItem(
+            `mygymbrou_profile_${userId}`,
+            JSON.stringify(data)
+          );
+        } catch {}
+
         if (!data.onboarding_completed) {
           setShowOnboarding(true);
+        } else {
+          setShowOnboarding(false);
         }
-      } else if (error && error.code === "PGRST116") {
-        // No tiene perfil aún: disparar onboarding
+      } else if (!cachedProfile?.onboarding_completed) {
+        // Solo si no existe ningún perfil ni en local ni en remoto
         setShowOnboarding(true);
       }
     } catch {
-      // Offline o error de red: continuar de manera tolerante
+      // Si está offline pero tiene perfil local en caché, continúa sin bloquear
+      if (!cachedProfile?.onboarding_completed) {
+        setShowOnboarding(true);
+      }
     } finally {
       setCheckingAuth(false);
     }
@@ -111,25 +163,31 @@ export default function HomePage() {
         onboarding_completed: true,
       };
 
-      // Guardado a través del endpoint seguro del servidor /api/profile
-      const res = await fetch("/api/profile", {
+      // Guardado inmediato en localStorage para persistencia garantizada
+      try {
+        localStorage.setItem(
+          `mygymbrou_profile_${sessionUser.id}`,
+          JSON.stringify({ ...profilePayload, ...formData })
+        );
+      } catch {}
+
+      setProfileData({ ...formData, onboarding_completed: true });
+      setShowOnboarding(false);
+
+      // Guardado asíncrono en base de datos Supabase
+      await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ profile: profilePayload }),
       });
 
-      const json = await res.json();
-      if (!res.ok || json.error) {
-        console.warn("[ONBOARDING WARNING]", json.error);
-      }
-
-      setProfileData({ ...formData, onboarding_completed: true });
-      setShowOnboarding(false);
+      // Abrir tour del sistema para que el nuevo usuario conozca todo el funcionamiento
+      setShowTour(true);
     } catch (err) {
       console.error("[ONBOARDING ERROR]", err);
-      // Permitir continuar de forma bondadosa sin bloquear al usuario
       setProfileData({ ...formData, onboarding_completed: true });
       setShowOnboarding(false);
+      setShowTour(true);
     }
   };
 
@@ -238,6 +296,12 @@ export default function HomePage() {
         />
       )}
 
+      {/* Recorrido Guiado Interactivo (Tour del Sistema) */}
+      <SystemTourModal
+        open={showTour}
+        onClose={() => setShowTour(false)}
+      />
+
       <header className="sticky top-0 z-40 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/90 dark:bg-[#09090B]/90 backdrop-blur-md">
         <div className="mx-auto max-w-4xl px-4 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
@@ -299,6 +363,17 @@ export default function HomePage() {
                 WOD Timer
               </span>
               <span className="font-mono">{formatSessionDuration(workoutElapsedSec)}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowTour(true)}
+              aria-label="Ver recorrido guiado del sistema"
+              title="Tour del Sistema"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121214] px-2.5 sm:px-3 py-2 text-xs font-bold text-zinc-800 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-[#A3E635] transition-colors"
+            >
+              <Sparkles className="h-4 w-4 text-emerald-700 dark:text-[#A3E635]" />
+              <span className="hidden sm:inline">Tour</span>
             </button>
 
             <button

@@ -25,6 +25,7 @@ import {
   RotateCcw,
   Star,
 } from "lucide-react";
+import AdBanner from "@/components/AdBanner";
 
 interface LandingPageProps {
   onOpenAuth: (mode: "LOGIN" | "SIGNUP") => void;
@@ -145,6 +146,11 @@ export default function LandingPage({ onOpenAuth }: LandingPageProps) {
               <Users className="h-4 w-4 text-[#A3E635]" />
               <span>Ya soy Miembro</span>
             </button>
+          </div>
+
+          {/* Espacio Publicitario Estratégico 320x50 Adsterra sin contorno */}
+          <div className="pt-4 flex justify-center">
+            <AdBanner format="320x50" placementName="Patrocinador Oficial" />
           </div>
 
           {/* Banner de Galería Fitness Motivacional (Hombres, Mujeres y Gimnasio) */}
