@@ -19,6 +19,7 @@ export interface AnatomicalSpriteSpec {
   secondaryLabel: string;
   movementCue: string;
   customImageUrl?: string;
+  customFrames?: string[]; // Secuencia de 2 o 3 fotogramas fluidos en alta definición estilo dark neón
   isHomeExercise?: boolean;
 }
 
@@ -1056,69 +1057,80 @@ export function ExerciseExecutionVisual({
   const realPhoto1 = freeDbId ? `${FREE_EXERCISE_DB_CDN_BASE}/${freeDbId}/1.jpg` : null;
   const hasRealPhotos = Boolean(realPhoto0 && realPhoto1);
 
-  type ViewMode = "HD_IMAGE" | "ANATOMY_2_POSES" | "VIDEO_GIF";
+  // Secuencia de fotogramas disponibles (hasta 3 fotogramas: Inicio, Rango, Contracción)
+  const sequenceFrames: string[] = spec.customFrames && spec.customFrames.length > 0
+    ? spec.customFrames
+    : hasRealPhotos
+    ? [realPhoto0!, realPhoto1!]
+    : spec.customImageUrl
+    ? [spec.customImageUrl]
+    : [];
+
+  const hasSequence = sequenceFrames.length > 1;
+
+  type ViewMode = "FLUID_ANIMATION" | "MULTI_POSES" | "STATIC_HD";
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (isHome) return "HD_IMAGE";
-    return "VIDEO_GIF";
+    if (spec.customImageUrl && !hasSequence) return "STATIC_HD";
+    return "FLUID_ANIMATION";
   });
 
   const [gifFailed, setGifFailed] = useState<boolean>(false);
   const [paused, setPaused] = useState<boolean>(false);
-  const [activeFrame, setActiveFrame] = useState<0 | 1>(0);
+  const [activeFrameIndex, setActiveFrameIndex] = useState<number>(0);
 
   // Sincronizar modo al cambiar de ejercicio
   useEffect(() => {
     setGifFailed(false);
-    if (isHome) {
-      setViewMode("HD_IMAGE");
+    setActiveFrameIndex(0);
+    if (spec.customImageUrl && !spec.customFrames?.length) {
+      setViewMode("STATIC_HD");
     } else {
-      setViewMode("VIDEO_GIF");
+      setViewMode("FLUID_ANIMATION");
     }
-  }, [exerciseId, isHome]);
+  }, [exerciseId, spec.customImageUrl, spec.customFrames]);
 
   const alignedFrames = useAlignedExerciseFrames(spec.sheetUrl, spec.row);
 
-  // Animación continua entre Inicio y Contracción
+  // Fotogramas para la animación
+  const activeAnimFrames: string[] = sequenceFrames.length > 0
+    ? sequenceFrames
+    : alignedFrames
+    ? [alignedFrames[0], alignedFrames[1]]
+    : [];
+
+  // Animación fluida cíclica entre los 2 o 3 fotogramas (ej: 0 -> 1 -> 2 -> 1 -> 0)
   useEffect(() => {
-    if (!paused) {
+    if (!paused && activeAnimFrames.length > 1) {
+      const stepMs = activeAnimFrames.length >= 3 ? 900 : 1150;
       const timer = setInterval(() => {
-        setActiveFrame((prev) => (prev === 0 ? 1 : 0));
-      }, 1150);
+        setActiveFrameIndex((prev) => (prev + 1) % activeAnimFrames.length);
+      }, stepMs);
       return () => clearInterval(timer);
     }
-  }, [paused]);
+  }, [paused, activeAnimFrames.length]);
 
   // Miniatura en las tarjetas de "Máquinas e Instrumentos Alternativos"
   if (compact) {
+    const compactThumb =
+      spec.customImageUrl ||
+      (spec.customFrames && spec.customFrames[0]) ||
+      realPhoto0 ||
+      spec.gifUrl;
+
     return (
       <div
         className={`relative w-full h-full bg-[#0c0c0e] flex items-center justify-center overflow-hidden select-none ${className}`}
       >
-        {spec.customImageUrl ? (
+        {compactThumb ? (
           <img
-            src={spec.customImageUrl}
+            src={compactThumb}
             alt={spec.badge}
             className="h-full w-full object-cover"
-            draggable={false}
-          />
-        ) : realPhoto0 ? (
-          <img
-            src={realPhoto0}
-            alt={spec.badge}
-            className="h-full w-full object-cover"
-            draggable={false}
-          />
-        ) : !gifFailed ? (
-          <img
-            src={spec.gifUrl}
-            alt={spec.badge}
-            onError={() => setGifFailed(true)}
-            className="h-full w-full object-contain p-1 filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
             draggable={false}
           />
         ) : alignedFrames ? (
           <img
-            src={alignedFrames[activeFrame]}
+            src={alignedFrames[0]}
             alt={spec.badge}
             className="h-full w-full object-contain p-1"
             draggable={false}
@@ -1137,6 +1149,12 @@ export function ExerciseExecutionVisual({
     );
   }
 
+  const phaseLabels = [
+    "Fase 1: Posición Inicial",
+    activeAnimFrames.length >= 3 ? "Fase 2: Descenso / Rango" : "Fase 2: Contracción Máxima",
+    "Fase 3: Contracción Máxima",
+  ];
+
   return (
     <div
       className={`w-full h-full bg-[#09090b] flex flex-col select-none overflow-hidden ${className}`}
@@ -1145,155 +1163,155 @@ export function ExerciseExecutionVisual({
     >
       {/* Lienzo Visual 100% Despejado: Cero texto flotante encimado */}
       <div className="relative flex-1 min-h-0 w-full flex items-center justify-center bg-gradient-to-b from-[#09090b] via-[#101014] to-[#09090b] overflow-hidden p-2">
-        {viewMode === "HD_IMAGE" && spec.customImageUrl ? (
+        {viewMode === "STATIC_HD" && spec.customImageUrl ? (
           <img
             src={spec.customImageUrl}
             alt={spec.badge}
             className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl border border-zinc-800/80"
             draggable={false}
           />
-        ) : viewMode === "VIDEO_GIF" ? (
-          <div className="w-full h-full flex items-center justify-center">
-            {hasRealPhotos ? (
+        ) : viewMode === "FLUID_ANIMATION" ? (
+          <div className="w-full h-full flex flex-col items-center justify-center relative">
+            {activeAnimFrames.length > 0 ? (
               <img
-                src={!paused ? (activeFrame === 0 ? realPhoto0! : realPhoto1!) : realPhoto1!}
-                alt={`${spec.badge} - ${activeFrame === 0 ? "Fase Inicial" : "Contracción"}`}
+                src={activeAnimFrames[activeFrameIndex % activeAnimFrames.length]}
+                alt={`${spec.badge} - ${phaseLabels[activeFrameIndex % phaseLabels.length]}`}
                 className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl border border-zinc-800/80 transition-all duration-300"
                 draggable={false}
               />
             ) : !gifFailed ? (
               <img
-                src={!paused ? spec.gifUrl : alignedFrames ? alignedFrames[1] : spec.gifUrl}
+                src={spec.gifUrl}
                 alt={spec.badge}
                 onError={() => setGifFailed(true)}
-                className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
-                draggable={false}
-              />
-            ) : alignedFrames ? (
-              <img
-                src={alignedFrames[activeFrame]}
-                alt={`${spec.badge} - Pausa`}
                 className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
                 draggable={false}
               />
             ) : null}
           </div>
         ) : (
-          /* Vista de 2 Poses Anatómicas (Inicio y Contracción) */
-          <div className="w-full h-full grid grid-cols-2 items-center gap-2 p-1">
-            {hasRealPhotos ? (
-              <>
-                <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2 overflow-hidden">
-                  <img
-                    src={realPhoto0!}
-                    alt={`${spec.badge} - Inicio`}
-                    className="max-h-full max-w-full rounded-xl object-contain shadow-md"
-                    draggable={false}
-                  />
-                </div>
-                <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2 overflow-hidden">
-                  <img
-                    src={realPhoto1!}
-                    alt={`${spec.badge} - Contracción`}
-                    className="max-h-full max-w-full rounded-xl object-contain shadow-md"
-                    draggable={false}
-                  />
-                </div>
-              </>
-            ) : alignedFrames ? (
-              <>
-                <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2">
-                  <img
-                    src={alignedFrames[0]}
-                    alt={`${spec.badge} - Inicio`}
-                    className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
-                    draggable={false}
-                  />
-                </div>
-                <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2">
-                  <img
-                    src={alignedFrames[1]}
-                    alt={`${spec.badge} - Contracción`}
-                    className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
-                    draggable={false}
-                  />
-                </div>
-              </>
-            ) : null}
+          /* Vista de Poses Desglosadas (2 o 3 Poses lado a lado) */
+          <div className={`w-full h-full grid ${activeAnimFrames.length >= 3 ? "grid-cols-3" : "grid-cols-2"} items-center gap-2 p-1`}>
+            {activeAnimFrames.map((frameSrc, idx) => (
+              <div
+                key={idx}
+                className="h-full w-full flex flex-col items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2 overflow-hidden relative"
+              >
+                <img
+                  src={frameSrc}
+                  alt={`${spec.badge} - Fase ${idx + 1}`}
+                  className="max-h-full max-w-full rounded-xl object-contain shadow-md"
+                  draggable={false}
+                />
+                <span className="absolute bottom-1.5 left-2 rounded-full bg-zinc-900/90 border border-zinc-700/80 px-2 py-0.5 text-[10px] font-semibold text-zinc-300">
+                  {idx === 0 ? "1. Inicio" : idx === 1 && activeAnimFrames.length >= 3 ? "2. Rango" : "3. Contracción"}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Barra Inferior Limpia: Solo controles esenciales fuera de la imagen */}
-      <div className="h-9 shrink-0 border-t border-zinc-800/80 bg-[#121215] px-3 flex items-center justify-between">
-        <div>
-          {viewMode === "VIDEO_GIF" ? (
-            <button
-              type="button"
-              onClick={() => setPaused((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
-              title={paused ? "Reanudar animación" : "Pausar animación"}
-            >
-              {paused ? (
-                <>
-                  <Play className="h-3.5 w-3.5 text-[#A3E635] fill-current" />
-                  <span>Reanudar</span>
-                </>
-              ) : (
-                <>
-                  <Pause className="h-3.5 w-3.5" />
-                  <span>Pausar</span>
-                </>
-              )}
-            </button>
-          ) : (
+      {/* Barra Inferior Limpia: Controles de fotogramas y alternador de vista */}
+      <div className="h-10 shrink-0 border-t border-zinc-800/80 bg-[#121215] px-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {viewMode === "FLUID_ANIMATION" && activeAnimFrames.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPaused((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
+                title={paused ? "Reanudar animación" : "Pausar animación"}
+              >
+                {paused ? (
+                  <>
+                    <Play className="h-3.5 w-3.5 text-[#A3E635] fill-current" />
+                    <span className="hidden sm:inline">Play</span>
+                  </>
+                ) : (
+                  <>
+                    <Pause className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Pausa</span>
+                  </>
+                )}
+              </button>
+
+              {/* Selector interactivo de fases: 1, 2, 3 */}
+              <div className="flex items-center gap-1">
+                {activeAnimFrames.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setActiveFrameIndex(idx);
+                      setPaused(true);
+                    }}
+                    className={`h-5 px-2 rounded-md text-[10px] font-bold transition-all ${
+                      activeFrameIndex % activeAnimFrames.length === idx
+                        ? "bg-[#A3E635] text-zinc-950 shadow-sm"
+                        : "bg-zinc-800/70 text-zinc-400 hover:text-zinc-200"
+                    }`}
+                    title={phaseLabels[idx]}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {viewMode === "STATIC_HD" && (
             <span className="text-xs text-zinc-400 font-medium">
-              {viewMode === "HD_IMAGE" ? "Guía en Casa" : "Inicio y Contracción"}
+              Ilustración Biomecánica HD
             </span>
           )}
         </div>
 
         {/* Alternador simple y limpio */}
         <div className="flex items-center gap-1 rounded-lg bg-zinc-900 p-0.5 border border-zinc-800">
-          {spec.customImageUrl ? (
+          {activeAnimFrames.length > 1 && (
             <button
               type="button"
-              onClick={() => setViewMode("HD_IMAGE")}
+              onClick={() => setViewMode("FLUID_ANIMATION")}
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+                viewMode === "FLUID_ANIMATION"
+                  ? "bg-zinc-800 text-[#A3E635] shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <Film className="h-3 w-3" />
+              <span>Fluido</span>
+            </button>
+          )}
+
+          {spec.customImageUrl && (
+            <button
+              type="button"
+              onClick={() => setViewMode("STATIC_HD")}
               className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
-                viewMode === "HD_IMAGE"
+                viewMode === "STATIC_HD"
                   ? "bg-zinc-800 text-[#A3E635] shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               Ilustración
             </button>
-          ) : (
+          )}
+
+          {activeAnimFrames.length > 1 && (
             <button
               type="button"
-              onClick={() => setViewMode("VIDEO_GIF")}
+              onClick={() => setViewMode("MULTI_POSES")}
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
-                viewMode === "VIDEO_GIF"
+                viewMode === "MULTI_POSES"
                   ? "bg-zinc-800 text-[#A3E635] shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <Film className="h-3 w-3" />
-              <span>Animación</span>
+              <Columns2 className="h-3 w-3" />
+              <span>{activeAnimFrames.length >= 3 ? "3 Fases" : "2 Fases"}</span>
             </button>
           )}
-
-          <button
-            type="button"
-            onClick={() => setViewMode("ANATOMY_2_POSES")}
-            className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
-              viewMode === "ANATOMY_2_POSES"
-                ? "bg-zinc-800 text-[#A3E635] shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            <Columns2 className="h-3 w-3" />
-            <span>2 Poses</span>
-          </button>
         </div>
       </div>
     </div>
