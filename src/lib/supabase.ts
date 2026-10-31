@@ -2,24 +2,18 @@
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-let cachedClient: SupabaseClient | null = null;
+// Credenciales fijas de Supabase de producción
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://oasfvjaukwanhlqngtir.supabase.co";
 
-export function getSupabase(): SupabaseClient {
-  if (cachedClient) return cachedClient;
+const SUPABASE_ANON_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hc2Z2amF1a3dhbmhscW5ndGlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNjMyOTAsImV4cCI6MjEwODgzOTI5MH0.mUxPv53wkgJSXr7T-d7DRGpGF-3BxThnPTNcXgQ6ktw";
 
-  // En Next.js cliente o runtime, leer las variables de entorno
-  const url =
-    process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    (typeof window !== "undefined" ? (window as any).__NEXT_DATA__?.runtimeConfig?.NEXT_PUBLIC_SUPABASE_URL : "") ||
-    "https://placeholder-project.supabase.co";
-
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    (typeof window !== "undefined" ? (window as any).__NEXT_DATA__?.runtimeConfig?.NEXT_PUBLIC_SUPABASE_ANON_KEY : "") ||
-    "placeholder-anon-key";
-
-  cachedClient = createClient(url, key);
-  return cachedClient;
-}
-
-export const supabase = getSupabase();
+export const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+});
