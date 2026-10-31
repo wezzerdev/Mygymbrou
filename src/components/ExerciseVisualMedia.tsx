@@ -897,7 +897,7 @@ function useAlignedExerciseFrames(
       const srcCanvas = document.createElement("canvas");
       srcCanvas.width = fullW;
       srcCanvas.height = fullH;
-      const srcCtx = srcCanvas.getContext("2d");
+      const srcCtx = srcCanvas.getContext("2d", { willReadFrequently: true });
       if (!srcCtx) return;
       srcCtx.drawImage(img, 0, 0);
 
@@ -990,7 +990,7 @@ function useAlignedExerciseFrames(
         const outCanvas = document.createElement("canvas");
         outCanvas.width = outSize;
         outCanvas.height = outSize;
-        const ctx = outCanvas.getContext("2d")!;
+        const ctx = outCanvas.getContext("2d", { willReadFrequently: true })!;
         // Fondo transparente moderno para que respete el tema oscuro de la UI
         ctx.clearRect(0, 0, outSize, outSize);
 
