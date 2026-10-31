@@ -33,12 +33,20 @@ export default function AuthModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+
+    if (mode === "SIGNUP" && !termsAccepted) {
+      setErrorMsg("Debes aceptar los Términos y Condiciones y la Política de Privacidad para crear tu cuenta.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -79,8 +87,9 @@ export default function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-[#121214] p-6 sm:p-8 shadow-2xl space-y-6">
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="w-full max-w-md rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-[#121214] p-6 sm:p-8 shadow-2xl space-y-6">
         <div className="text-center space-y-1">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-[#A3E635] dark:bg-[#A3E635] dark:text-[#09090B]">
             <Dumbbell className="h-6 w-6" />
@@ -153,6 +162,31 @@ export default function AuthModal({
             </div>
           </div>
 
+          {mode === "SIGNUP" && (
+            <div className="pt-1">
+              <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-zinc-600 dark:text-zinc-400 select-none">
+                <input
+                  type="checkbox"
+                  required
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-zinc-300 dark:border-zinc-700 text-[#A3E635] focus:ring-[#A3E635] dark:bg-[#18181B] cursor-pointer"
+                />
+                <span>
+                  He leído y acepto los{" "}
+                  <button
+                    type="button"
+                    onClick={() => setShowTermsModal(true)}
+                    className="font-bold underline text-zinc-900 dark:text-[#A3E635] hover:opacity-80"
+                  >
+                    Términos y Condiciones
+                  </button>{" "}
+                  y la Política de Privacidad y Consentimiento de Salud Deportiva.
+                </span>
+              </label>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -187,5 +221,48 @@ export default function AuthModal({
         </div>
       </div>
     </div>
+
+      {/* Modal Emergente de Términos y Condiciones */}
+      {showTermsModal && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+          <div className="w-full max-w-lg rounded-3xl border border-zinc-800 bg-[#121214] p-6 text-zinc-200 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <h4 className="text-base font-bold text-white flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-[#A3E635]" />
+                Términos, Condiciones y Deslinde de Responsabilidad
+              </h4>
+            </div>
+
+            <div className="overflow-y-auto space-y-3 text-xs text-zinc-400 pr-2 leading-relaxed flex-1">
+              <p>
+                <strong className="text-white">1. Propósito Informativo y Educativo:</strong> MyGymBrou es una plataforma inteligente de asistencia deportiva y seguimiento biométrico. Las sugerencias de carga, 1RM, ejercicios en casa/gimnasio y desglose nutricional por visión artificial son de carácter orientativo basadas en literatura científica deportiva.
+              </p>
+              <p>
+                <strong className="text-white">2. Consentimiento de Actividad Física:</strong> El usuario reconoce que el entrenamiento con sobrecarga y ejercicios físicos intensos conllevan riesgo inherente de lesión. Se recomienda consultar a un médico o profesional de la salud antes de comenzar cualquier programa de ejercicio de alta intensidad.
+              </p>
+              <p>
+                <strong className="text-white">3. Deslinde de Responsabilidad Médica:</strong> MyGymBrou y sus creadores quedan exentos de responsabilidad ante lesiones musculares, articulares o cualquier daño derivado de una técnica inadecuada o uso indebido de los pesos seleccionados.
+              </p>
+              <p>
+                <strong className="text-white">4. Privacidad y Seguridad de Datos:</strong> Tus datos biométricos, fotos de comidas y registros de entrenamiento se almacenan en tu propia instancia segura con Row Level Security (RLS) y no son compartidos con terceros sin tu consentimiento explícito.
+              </p>
+            </div>
+
+            <div className="pt-3 border-t border-zinc-800 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setTermsAccepted(true);
+                  setShowTermsModal(false);
+                }}
+                className="rounded-xl bg-[#A3E635] text-black px-5 py-2 text-xs font-bold shadow hover:opacity-90"
+              >
+                Aceptar y Continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

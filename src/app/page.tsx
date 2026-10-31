@@ -92,7 +92,7 @@ export default function HomePage() {
   const handleCompleteOnboarding = async (formData: OnboardingData) => {
     if (!sessionUser) return;
     try {
-      const { error } = await supabase.from("profiles").upsert({
+      const profilePayload = {
         id: sessionUser.id,
         email: sessionUser.email,
         full_name: formData.fullName,
@@ -109,12 +109,26 @@ export default function HomePage() {
         training_years: formData.trainingYears,
         preferred_split: formData.preferredSplit,
         onboarding_completed: true,
+      };
+
+      // Guardado a través del endpoint seguro del servidor /api/profile
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile: profilePayload }),
       });
-      if (!error) {
-        setProfileData({ ...formData, onboarding_completed: true });
-        setShowOnboarding(false);
+
+      const json = await res.json();
+      if (!res.ok || json.error) {
+        console.warn("[ONBOARDING WARNING]", json.error);
       }
-    } catch {
+
+      setProfileData({ ...formData, onboarding_completed: true });
+      setShowOnboarding(false);
+    } catch (err) {
+      console.error("[ONBOARDING ERROR]", err);
+      // Permitir continuar de forma bondadosa sin bloquear al usuario
+      setProfileData({ ...formData, onboarding_completed: true });
       setShowOnboarding(false);
     }
   };
