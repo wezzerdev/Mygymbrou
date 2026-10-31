@@ -26,9 +26,9 @@ import {
   LEVEL_LABELS,
 } from "@/lib/fitness-data";
 import {
-  FREE_EXERCISE_DB_CDN_BASE,
   registerCustomExerciseVisual,
   ANATOMICAL_SPRITE_CATALOG,
+  ExerciseExecutionVisual,
 } from "@/components/ExerciseVisualMedia";
 
 interface RawFreeExerciseDbRecord {
@@ -115,38 +115,32 @@ const SHEET_BY_GROUP: Record<
   Pecho: {
     sheetUrl: "/exercises/modern_sheet_01.png",
     row: "top",
-    defaultGif:
-      "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/pectorals/barbell-bench-press.gif",
+    defaultGif: "/exercises/neon_s01_top_3.jpg",
   },
   Espalda: {
-    sheetUrl: "/exercises/modern_sheet_01.png",
-    row: "top",
-    defaultGif:
-      "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/lats/cable-pulldown-pro-lat-bar.gif",
+    sheetUrl: "/exercises/modern_sheet_08.png",
+    row: "bottom",
+    defaultGif: "/exercises/neon_s08_bottom_3.jpg",
   },
   Hombros: {
-    sheetUrl: "/exercises/modern_sheet_01.png",
+    sheetUrl: "/exercises/modern_sheet_04.png",
     row: "top",
-    defaultGif:
-      "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/delts/dumbbell-seated-shoulder-press.gif",
+    defaultGif: "/exercises/neon_s04_top_3.jpg",
   },
   Piernas: {
-    sheetUrl: "/exercises/modern_sheet_01.png",
+    sheetUrl: "/exercises/modern_sheet_14.png",
     row: "bottom",
-    defaultGif:
-      "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/glutes/sled-hack-squat.gif",
+    defaultGif: "/exercises/neon_s14_bottom_3.jpg",
   },
   Brazos: {
-    sheetUrl: "/exercises/modern_sheet_01.png",
-    row: "bottom",
-    defaultGif:
-      "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/biceps/ez-barbell-curl.gif",
+    sheetUrl: "/exercises/modern_sheet_12.png",
+    row: "top",
+    defaultGif: "/exercises/neon_s12_top_3.jpg",
   },
   Core: {
-    sheetUrl: "/exercises/modern_sheet_01.png",
+    sheetUrl: "/exercises/modern_sheet_17.png",
     row: "bottom",
-    defaultGif:
-      "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/abs/cable-kneeling-crunch.gif",
+    defaultGif: "/exercises/neon_s17_bottom_3.jpg",
   },
 };
 
@@ -369,15 +363,25 @@ export default function FreeExerciseExplorerModal({
     onClose();
   };
 
-  const photo0 = `${FREE_EXERCISE_DB_CDN_BASE}/${selectedItem.freeExerciseDbId}/0.jpg`;
-  const photo1 = `${FREE_EXERCISE_DB_CDN_BASE}/${selectedItem.freeExerciseDbId}/1.jpg`;
+  const getExplorerThumbUrl = (ex: ExerciseItem): string => {
+    const spec = ANATOMICAL_SPRITE_CATALOG[ex.id];
+    if (spec?.customImageUrl) return spec.customImageUrl;
+    if (spec?.customFrames && spec.customFrames.length > 0) return spec.customFrames[0];
+    if (spec) {
+      const m = spec.sheetUrl.match(/(\d{2})/);
+      const num = m ? m[1] : "01";
+      return `/exercises/neon_s${num}_${spec.row}_3.jpg`;
+    }
+    const groupVisual = SHEET_BY_GROUP[ex.grupoMuscular] || SHEET_BY_GROUP.Pecho;
+    return groupVisual.defaultGif;
+  };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-5 overflow-y-auto"
       role="dialog"
       aria-modal="true"
-      aria-label="Explorador Biomecánico free-exercise-db"
+      aria-label="Explorador Biomecánico 3D Dark Studio"
     >
       <div className="w-full max-w-5xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121214] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Cabecera del Explorador */}
@@ -386,16 +390,16 @@ export default function FreeExerciseExplorerModal({
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 text-[#A3E635] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
                 <Sparkles className="h-3 w-3" />
-                free-exercise-db Integrado
+                Catálogo Biomecánico 3D Neón
               </span>
               <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
                 {remoteCount > 0
-                  ? `${remoteCount + EXERCISE_CATALOG.length} ejercicios con fotos 0.jpg / 1.jpg y biomecánica`
+                  ? `${remoteCount + EXERCISE_CATALOG.length} ejercicios con secuencia 3D de 3 fases`
                   : `${EXERCISE_CATALOG.length} ejercicios curados en español`}
               </span>
             </div>
             <h3 className="mt-1 text-lg sm:text-xl font-extrabold text-zinc-950 dark:text-zinc-50">
-              Explorador de Ejercicios y Fotos Paso a Paso
+              Explorador de Ejercicios y Biomecánica en 3 Fases
             </h3>
           </div>
 
@@ -515,7 +519,7 @@ export default function FreeExerciseExplorerModal({
             {filteredExercises.map((ex) => {
               const isSelected = selectedItem.id === ex.id;
               const isSpanishCurated = !ex.id.startsWith("freedb-");
-              const thumbUrl = `${FREE_EXERCISE_DB_CDN_BASE}/${ex.freeExerciseDbId}/0.jpg`;
+              const thumbUrl = getExplorerThumbUrl(ex);
 
               return (
                 <button
@@ -605,58 +609,10 @@ export default function FreeExerciseExplorerModal({
               </div>
             </div>
 
-            {/* Foto de Demostración: Ilustración en Casa HD o Fotos 0.jpg / 1.jpg */}
-            {ANATOMICAL_SPRITE_CATALOG[selectedItem.id]?.customImageUrl ? (
-              <div className="relative h-56 sm:h-64 w-full overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#09090b] flex items-center justify-center p-2 shadow-xl">
-                <img
-                  src={ANATOMICAL_SPRITE_CATALOG[selectedItem.id]?.customImageUrl}
-                  alt={selectedItem.nombre}
-                  className="h-full w-full object-contain rounded-xl"
-                />
-                <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-lg bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 border border-emerald-500/40 text-[10px] font-bold text-emerald-400">
-                  <Home className="h-3 w-3" />
-                  Guía En Casa (Sin Instrumentos)
-                </span>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 p-3">
-                <div
-                  className={`relative h-44 sm:h-52 overflow-hidden rounded-xl border transition-all ${
-                    activePhotoStep === 0
-                      ? "border-[#A3E635] ring-2 ring-[#A3E635]/30"
-                      : "border-zinc-800 opacity-90"
-                  }`}
-                >
-                  <img
-                    src={photo0}
-                    alt={`${selectedItem.nombre} - Posición Inicial (0.jpg)`}
-                    className="h-full w-full object-cover"
-                  />
-                  <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-zinc-950/90 border border-zinc-700 px-2 py-1 text-[10px] font-extrabold text-white">
-                    <Camera className="h-3 w-3 text-[#A3E635]" />
-                    1. Posición Inicial (0.jpg)
-                  </span>
-                </div>
-
-                <div
-                  className={`relative h-44 sm:h-52 overflow-hidden rounded-xl border transition-all ${
-                    activePhotoStep === 1
-                      ? "border-[#A3E635] ring-2 ring-[#A3E635]/30"
-                      : "border-zinc-800 opacity-90"
-                  }`}
-                >
-                  <img
-                    src={photo1}
-                    alt={`${selectedItem.nombre} - Contracción Final (1.jpg)`}
-                    className="h-full w-full object-cover"
-                  />
-                  <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md bg-zinc-950/90 border border-[#A3E635]/50 px-2 py-1 text-[10px] font-extrabold text-[#A3E635]">
-                    <CheckCircle2 className="h-3 w-3" />
-                    2. Contracción Final (1.jpg)
-                  </span>
-                </div>
-              </div>
-            )}
+            {/* Demostración Biomecánica 3D Dark Studio en 3 Fases */}
+            <div className="h-64 sm:h-72 w-full overflow-hidden rounded-2xl border border-zinc-800 bg-[#09090b] shadow-xl">
+              <ExerciseExecutionVisual exerciseId={selectedItem.id} />
+            </div>
 
             {/* Músculos Primarios y Secundarios */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

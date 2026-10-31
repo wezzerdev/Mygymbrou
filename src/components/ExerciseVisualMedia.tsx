@@ -106,11 +106,10 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "press-banca-inclinado-mancuernas": {
     sheetUrl: "/exercises/modern_sheet_01.png",
     row: "top",
-    customImageUrl: "/exercises/gym_incline_db_press.jpg",
     customFrames: [
       "/exercises/neon_s01_top_1.jpg",
       "/exercises/neon_s01_top_2.jpg",
-      "/exercises/gym_incline_db_press.jpg",
+      "/exercises/neon_s01_top_3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/pectorals/dumbbell-incline-bench-press.gif",
@@ -144,11 +143,11 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "cruces-polea-alta-baja": {
     sheetUrl: "/exercises/modern_sheet_05.png",
     row: "bottom",
-    customImageUrl: "/exercises/gym_cable_crossover_3.jpg",
+    customImageUrl: "/exercises/gym_cable_crossover_2.jpg",
     customFrames: [
-      "/exercises/gym_cable_crossover_1.jpg",
-      "/exercises/gym_cable_crossover_2.jpg",
-      "/exercises/gym_cable_crossover_3.jpg",
+      "/exercises/gym_cable_crossover_f1.jpg",
+      "/exercises/gym_cable_crossover_f2.jpg",
+      "/exercises/gym_cable_crossover_f3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/pectorals/cable-low-fly.gif",
@@ -186,9 +185,9 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
     row: "top",
     customImageUrl: "/exercises/gym_military_press.jpg",
     customFrames: [
-      "/exercises/neon_s04_top_1.jpg",
-      "/exercises/neon_s04_top_2.jpg",
-      "/exercises/gym_military_press.jpg",
+      "/exercises/gym_military_press_f1.jpg",
+      "/exercises/gym_military_press_f2.jpg",
+      "/exercises/gym_military_press_f3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/delts/barbell-standing-wide-military-press.gif",
@@ -234,11 +233,10 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "elevaciones-laterales-mancuernas": {
     sheetUrl: "/exercises/modern_sheet_10.png",
     row: "bottom",
-    customImageUrl: "/exercises/gym_lateral_raises.jpg",
     customFrames: [
       "/exercises/neon_s06_top_1.jpg",
       "/exercises/neon_s06_top_2.jpg",
-      "/exercises/gym_lateral_raises.jpg",
+      "/exercises/neon_s06_top_3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/delts/dumbbell-lateral-raise.gif",
@@ -262,11 +260,10 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "extension-triceps-katana-polea": {
     sheetUrl: "/exercises/modern_sheet_11.png",
     row: "bottom",
-    customImageUrl: "/exercises/gym_overhead_triceps_2.jpg",
     customFrames: [
       "/exercises/neon_s07_top_1.jpg",
-      "/exercises/gym_overhead_triceps_1.jpg",
-      "/exercises/gym_overhead_triceps_2.jpg",
+      "/exercises/neon_s07_top_2.jpg",
+      "/exercises/neon_s07_top_3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/triceps/cable-overhead-triceps-extension-rope-attachment.gif",
@@ -300,11 +297,10 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "jalon-al-pecho-neutro": {
     sheetUrl: "/exercises/modern_sheet_14.png",
     row: "top",
-    customImageUrl: "/exercises/gym_lat_pulldown.jpg",
     customFrames: [
       "/exercises/neon_s08_bottom_1.jpg",
       "/exercises/neon_s08_bottom_2.jpg",
-      "/exercises/gym_lat_pulldown.jpg",
+      "/exercises/neon_s08_bottom_3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/lats/cable-pulldown-pro-lat-bar.gif",
@@ -342,9 +338,9 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
     row: "top",
     customImageUrl: "/exercises/gym_chest_row.jpg",
     customFrames: [
-      "/exercises/neon_s10_top_1.jpg",
-      "/exercises/neon_s10_top_2.jpg",
-      "/exercises/gym_chest_row.jpg",
+      "/exercises/gym_chest_row_f1.jpg",
+      "/exercises/gym_chest_row_f2.jpg",
+      "/exercises/gym_chest_row_f3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/upper-back/lever-seated-row.gif",
@@ -392,9 +388,9 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
     row: "bottom",
     customImageUrl: "/exercises/gym_bicep_curl.jpg",
     customFrames: [
-      "/exercises/neon_s12_top_1.jpg",
-      "/exercises/neon_s12_top_2.jpg",
-      "/exercises/gym_bicep_curl.jpg",
+      "/exercises/gym_bicep_curl_f1.jpg",
+      "/exercises/gym_bicep_curl_f2.jpg",
+      "/exercises/gym_bicep_curl_f3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/biceps/ez-barbell-curl.gif",
@@ -452,9 +448,9 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
     row: "bottom",
     customImageUrl: "/exercises/gym_hack_squat.jpg",
     customFrames: [
-      "/exercises/neon_s14_bottom_1.jpg",
-      "/exercises/neon_s14_bottom_2.jpg",
-      "/exercises/gym_hack_squat.jpg",
+      "/exercises/gym_hack_squat_f1.jpg",
+      "/exercises/gym_hack_squat_f2.jpg",
+      "/exercises/gym_hack_squat_f3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/glutes/sled-hack-squat.gif",
@@ -490,11 +486,10 @@ export const ANATOMICAL_SPRITE_CATALOG: Record<string, AnatomicalSpriteSpec> = {
   "peso-muerto-rumano-barra": {
     sheetUrl: "/exercises/modern_sheet_17.png",
     row: "top",
-    customImageUrl: "/exercises/gym_romanian_deadlift.jpg",
     customFrames: [
       "/exercises/neon_s16_top_1.jpg",
       "/exercises/neon_s16_top_2.jpg",
-      "/exercises/gym_romanian_deadlift.jpg",
+      "/exercises/neon_s16_top_3.jpg",
     ],
     gifUrl:
       "https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@v1.1.0/glutes/barbell-romanian-deadlift.gif",
@@ -910,18 +905,13 @@ export function registerCustomExerciseVisual(
 }
 
 export function getFreeExerciseDbPhotoUrls(
-  exerciseId: string,
-  explicitFreeDbId?: string
+  exerciseId: string
 ): [string, string] {
-  const folder =
-    explicitFreeDbId ||
-    ANATOMICAL_SPRITE_CATALOG[exerciseId]?.freeExerciseDbId ||
-    FREE_EXERCISE_DB_ID_BY_SLUG[exerciseId] ||
-    "Incline_Dumbbell_Press";
-  return [
-    `${FREE_EXERCISE_DB_CDN_BASE}/${folder}/0.jpg`,
-    `${FREE_EXERCISE_DB_CDN_BASE}/${folder}/1.jpg`,
-  ];
+  const spec =
+    ANATOMICAL_SPRITE_CATALOG[exerciseId] ||
+    ANATOMICAL_SPRITE_CATALOG["press-banca-inclinado-mancuernas"];
+  const frames = getThreePhaseNeonFrames(spec);
+  return [frames[0], frames[2]];
 }
 
 // Caché en memoria de los fotogramas locales auto-centrados y alineados por píxel
@@ -1106,15 +1096,15 @@ function getThreePhaseNeonFrames(spec: AnatomicalSpriteSpec): [string, string, s
   if (spec.customFrames && spec.customFrames.length >= 3) {
     return [spec.customFrames[0], spec.customFrames[1], spec.customFrames[2]];
   }
+  if (spec.customImageUrl) {
+    const basePrefix = spec.customImageUrl.replace(/\.jpg$/i, "");
+    return [`${basePrefix}_f1.jpg`, `${basePrefix}_f2.jpg`, `${basePrefix}_f3.jpg`];
+  }
   const match = spec.sheetUrl.match(/(\d{2})/);
   const num = match ? match[1] : "01";
   const base1 = `/exercises/neon_s${num}_${spec.row}_1.jpg`;
   const base2 = `/exercises/neon_s${num}_${spec.row}_2.jpg`;
   const base3 = `/exercises/neon_s${num}_${spec.row}_3.jpg`;
-
-  if (spec.customImageUrl) {
-    return [spec.customImageUrl, base1, base3];
-  }
   return [base1, base2, base3];
 }
 

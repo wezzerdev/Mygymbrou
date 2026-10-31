@@ -7,20 +7,21 @@ function clamp(v, min = 0, max = 255) {
 }
 
 /**
- * Procesa un cuadrante (512x512) de sheet_XX.jpg:
- * 1. Elimina el fondo blanco (tanto exterior como huecos interiores entre brazos/bancos/cables).
- * 2. Aplica gradación de color 3D Dark Studio (sombras azul-pizarra profundas, tonos medios atléticos,
- *    resaltes cian-plata en bordes).
- * 3. Transforma los músculos activos en Verde Lima Neón (#A3E635) conservando el 100% de las fibras
- *    anatómicas 3D y añadiendo halo de luz (bloom) sobre la piel circundante.
- * 4. Calcula el centroide exacto de los músculos activos para trazar los vectores biomecánicos pegados al cuerpo.
+ * Procesa un cuadrante (512x512) de sheet_XX.jpg para convertirlo al estilo
+ * 3D Digital Dark Studio (idéntico a home_decline_pushups.jpg):
+ * 1. Elimina el fondo blanco y las sombras grises de piso bajo máquinas/pies.
+ * 2. Suaviza las estrías anatómicas de las zonas NO activas mediante un filtro bilateral
+ *    para que el cuerpo luzca como un avatar digital 3D con traje de compresión mate oscuro (#1e2532).
+ * 3. Conserva el 100% de las fibras anatómicas en los músculos objetivo iluminados en Verde Lima Neón (#A3E635).
  */
 function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neonIntensity = 1.0) {
   const out = Buffer.alloc(quadW * quadH * 4);
   const glowMask = new Float32Array(quadW * quadH);
+  const lumMap = new Float32Array(quadW * quadH);
+  const redMap = new Float32Array(quadW * quadH);
+  const satMap = new Float32Array(quadW * quadH);
 
-  // 1. Mapa de blancura de cada píxel (el fondo real en sheet_XX.jpg es blanco puro >= 236)
-  const whiteScore = new Float32Array(quadW * quadH);
+  // 1. Primero calculamos lum, redness y sat para todo el cuadrante
   for (let y = 0; y < quadH; y++) {
     for (let x = 0; x < quadW; x++) {
       const idx = ((startY + y) * fullW + (startX + x)) * 3;
@@ -31,15 +32,47 @@ function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neo
       const minC = Math.min(r, g, b);
       const sat = maxC - minC;
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      const redness = r - (g * 0.62 + b * 0.38);
+
+      const p = y * quadW + x;
+      lumMap[p] = lum;
+      redMap[p] = redness;
+      satMap[p] = sat;
+    }
+  }
+
+  // 2. Mapa de blancura + detección de sombras planas de piso (sin tocar piernas con borde oscuro)
+  const whiteScore = new Float32Array(quadW * quadH);
+  for (let y = 0; y < quadH; y++) {
+    for (let x = 0; x < quadW; x++) {
+      const p = y * quadW + x;
+      const lum = lumMap[p];
+      const sat = satMap[p];
+      const redness = redMap[p];
+
       if (sat <= 10 && lum >= 236) {
-        whiteScore[y * quadW + x] = (lum - 236) / 19; // 0..1
-      } else {
-        whiteScore[y * quadW + x] = 0;
+        whiteScore[p] = (lum - 236) / 19;
+      } else if (y > quadH * 0.68 && sat <= 12 && lum >= 190 && redness < 6) {
+        // Verificar que sea una sombra de piso plana (sin líneas de contorno oscuras en radio de 3px)
+        let minNeighborLum = 255;
+        for (let dy = -3; dy <= 3; dy++) {
+          const ny = y + dy;
+          if (ny < 0 || ny >= quadH) continue;
+          for (let dx = -3; dx <= 3; dx++) {
+            const nx = x + dx;
+            if (nx < 0 || nx >= quadW) continue;
+            const nLum = lumMap[ny * quadW + nx];
+            if (nLum < minNeighborLum) minNeighborLum = nLum;
+          }
+        }
+        if (minNeighborLum >= 172) {
+          whiteScore[p] = 0.85;
+        }
       }
     }
   }
 
-  // Flood-fill desde los bordes + detección de huecos blancos puros interiores (>= 250 en bloque 9x9)
+  // Flood-fill desde los bordes + huecos blancos interiores
   const isBg = new Uint8Array(quadW * quadH);
   const visited = new Uint8Array(quadW * quadH);
   const queue = new Int32Array(quadW * quadH);
@@ -57,8 +90,8 @@ function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neo
     if (!visited[r] && whiteScore[r] > 0.01) { visited[r] = 1; queue[qTail++] = r; }
   }
 
-  // Sembrar únicamente huecos interiores de fondo blanco puro (9x9 con min >= 250) para jamás tocar tendones/rodillas
-  for (let y = 5; y < quadH - 5; y++) {
+  // Huecos interiores de fondo blanco puro (bloque 9x9 >= 250) para jamás tocar rodillas ni tendones
+  for (let y = 5; y < Math.floor(quadH * 0.66); y++) {
     for (let x = 5; x < quadW - 5; x++) {
       const p = y * quadW + x;
       if (!visited[p] && whiteScore[p] > 0.88) {
@@ -99,6 +132,35 @@ function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neo
     }
   }
 
+  // 2. Suavizado bilateral del cuerpo no-activo para acabado 3D Digital Compression Suit
+  const smoothLumMap = new Float32Array(quadW * quadH);
+  const sRad = 4;
+  for (let y = 0; y < quadH; y++) {
+    for (let x = 0; x < quadW; x++) {
+      const p = y * quadW + x;
+      if (isBg[p]) continue;
+      const cLum = lumMap[p];
+      let sum = 0, wSum = 0;
+      for (let dy = -sRad; dy <= sRad; dy++) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= quadH) continue;
+        for (let dx = -sRad; dx <= sRad; dx++) {
+          const nx = x + dx;
+          if (nx < 0 || nx >= quadW) continue;
+          const np = ny * quadW + nx;
+          if (isBg[np]) continue;
+          const diff = Math.abs(lumMap[np] - cLum);
+          if (diff < 75) {
+            const w = 1.0 - diff / 75.0;
+            sum += lumMap[np] * w;
+            wSum += w;
+          }
+        }
+      }
+      smoothLumMap[p] = wSum > 0 ? sum / wSum : cLum;
+    }
+  }
+
   let minX = quadW, maxX = 0, minY = quadH, maxY = 0;
   let mSumX = 0, mSumY = 0, mWeight = 0;
   let mMinX = quadW, mMaxX = 0, mMinY = quadH, mMaxY = 0;
@@ -106,20 +168,21 @@ function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neo
   for (let y = 0; y < quadH; y++) {
     for (let x = 0; x < quadW; x++) {
       const pIdx = y * quadW + x;
-      const srcIdx = ((startY + y) * fullW + (startX + x)) * 3;
-      const r = srcBuf[srcIdx];
-      const g = srcBuf[srcIdx + 1];
-      const b = srcBuf[srcIdx + 2];
-
-      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-      const redness = r - (g * 0.62 + b * 0.38);
-
       if (isBg[pIdx]) {
         out[pIdx * 4 + 3] = 0;
         continue;
       }
 
-      // Suavizado de bordes (feathering) en contacto con el fondo
+      const srcIdx = ((startY + y) * fullW + (startX + x)) * 3;
+      const r = srcBuf[srcIdx];
+      const g = srcBuf[srcIdx + 1];
+      const b = srcBuf[srcIdx + 2];
+
+      const rawLum = lumMap[pIdx];
+      const smoothLum = smoothLumMap[pIdx];
+      const redness = redMap[pIdx];
+
+      // Suavizado de bordes en contacto con el fondo
       let bgNeighbors = 0;
       for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) {
@@ -131,45 +194,47 @@ function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neo
       }
 
       let alpha = 255;
-      if (bgNeighbors > 0 && redness < 15) {
-        const edgeSoftness = clamp((242 - lum) / 48, 0.15, 1.0);
-        alpha = clamp(255 * edgeSoftness * (1 - bgNeighbors * 0.06), 0, 255);
+      if (bgNeighbors > 0 && redness < 14) {
+        const edgeThresh = y > quadH * 0.66 ? 172 : 240;
+        const edgeSoftness = clamp((edgeThresh - rawLum) / 48, 0.05, 1.0);
+        alpha = clamp(255 * edgeSoftness * (1 - bgNeighbors * 0.08), 0, 255);
       }
 
-      if (alpha > 30) {
+      if (alpha > 35) {
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
         if (y < minY) minY = y;
         if (y > maxY) maxY = y;
       }
 
-      let outR, outG, outB;
-
-      // Color base del cuerpo/equipo en estudio oscuro (Dark Cyberpunk Studio Grading)
-      const norm = lum / 255;
+      // Superficie 3D mate antracita/pizarra para el traje de compresión y equipo
+      const bodyLum = rawLum * 0.25 + smoothLum * 0.75;
+      const norm = bodyLum / 255;
       let baseR, baseG, baseB;
-      if (norm < 0.32) {
-        const d = norm / 0.32;
-        baseR = 14 + d * 34;
-        baseG = 18 + d * 39;
-        baseB = 26 + d * 48;
+      if (norm < 0.35) {
+        const d = norm / 0.35;
+        baseR = 14 + d * 24;
+        baseG = 18 + d * 29;
+        baseB = 26 + d * 38;
       } else {
-        const t = (norm - 0.32) / 0.68;
-        const curve = Math.pow(t, 1.45);
-        const rim = Math.pow(t, 3.2);
-        baseR = 42 + curve * 112 + rim * 24;
-        baseG = 39 + curve * 96 + rim * 32;
-        baseB = 44 + curve * 88 + rim * 42;
+        const t = (norm - 0.35) / 0.65;
+        const curve = Math.pow(t, 1.35);
+        const rim = Math.pow(t, 2.8);
+        baseR = 38 + curve * 52 + rim * 28;
+        baseG = 47 + curve * 60 + rim * 38;
+        baseB = 64 + curve * 72 + rim * 48;
       }
 
-      // ¿Es músculo objetivo activo?
-      if (redness > 12) {
-        const muscleStrength = clamp((redness - 12) / 55, 0, 1);
-        const fiberShade = Math.pow(clamp((r * 0.82 + g * 0.18) / 242, 0.28, 1.0), 1.15);
+      let outR, outG, outB;
 
-        const neonR = (45 + 135 * fiberShade) * neonIntensity + baseR * (1 - neonIntensity * 0.9);
-        const neonG = (110 + 140 * fiberShade) * neonIntensity + baseG * (1 - neonIntensity * 0.9);
-        const neonB = (15 + 48 * fiberShade) * neonIntensity + baseB * (1 - neonIntensity * 0.9);
+      // Músculo objetivo activo en Verde Lima Neón (#A3E635) con fibras anatómicas nítidas
+      if (redness > 11) {
+        const muscleStrength = clamp((redness - 11) / 50, 0, 1);
+        const fiberShade = Math.pow(clamp((r * 0.82 + g * 0.18) / 240, 0.25, 1.0), 1.12);
+
+        const neonR = (48 + 138 * fiberShade) * neonIntensity + baseR * (1 - neonIntensity * 0.92);
+        const neonG = (118 + 137 * fiberShade) * neonIntensity + baseG * (1 - neonIntensity * 0.92);
+        const neonB = (14 + 46 * fiberShade) * neonIntensity + baseB * (1 - neonIntensity * 0.92);
 
         outR = clamp(baseR * (1 - muscleStrength) + neonR * muscleStrength);
         outG = clamp(baseG * (1 - muscleStrength) + neonG * muscleStrength);
@@ -193,10 +258,11 @@ function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neo
         outB = clamp(baseB);
       }
 
-      if (bgNeighbors >= 2 && bgNeighbors <= 5 && lum > 110) {
-        outR = clamp(outR * 0.75 + 110 * 0.25);
-        outG = clamp(outG * 0.75 + 210 * 0.25);
-        outB = clamp(outB * 0.75 + 245 * 0.25);
+      // Rim light cian-lima sutil en el contorno superior/medio del avatar 3D
+      if (y < quadH * 0.66 && bgNeighbors >= 2 && bgNeighbors <= 4 && rawLum > 115 && alpha > 140) {
+        outR = clamp(outR * 0.78 + 115 * 0.22);
+        outG = clamp(outG * 0.78 + 215 * 0.22);
+        outB = clamp(outB * 0.78 + 240 * 0.22);
       }
 
       out[pIdx * 4 + 0] = outR;
@@ -237,15 +303,15 @@ function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neo
     if (gVal > 0.015) {
       const a = out[i * 4 + 3];
       if (a > 0 && glowMask[i] < 0.3) {
-        const boost = gVal * 0.55;
-        out[i * 4 + 0] = clamp(out[i * 4 + 0] + 115 * boost);
-        out[i * 4 + 1] = clamp(out[i * 4 + 1] + 215 * boost);
-        out[i * 4 + 2] = clamp(out[i * 4 + 2] + 30 * boost);
+        const boost = gVal * 0.58;
+        out[i * 4 + 0] = clamp(out[i * 4 + 0] + 120 * boost);
+        out[i * 4 + 1] = clamp(out[i * 4 + 1] + 220 * boost);
+        out[i * 4 + 2] = clamp(out[i * 4 + 2] + 32 * boost);
       } else if (a === 0) {
         const haloAlpha = clamp(gVal * 115, 0, 95);
-        out[i * 4 + 0] = 150;
-        out[i * 4 + 1] = 235;
-        out[i * 4 + 2] = 45;
+        out[i * 4 + 0] = 152;
+        out[i * 4 + 1] = 238;
+        out[i * 4 + 2] = 48;
         out[i * 4 + 3] = haloAlpha;
       }
     }
@@ -276,14 +342,14 @@ function processQuadrant(srcBuf, fullW, fullH, startX, startY, quadW, quadH, neo
 }
 
 function createBackdropSvg(width, height, phaseIndex) {
-  const glowOpacity = phaseIndex === 3 ? 0.22 : phaseIndex === 2 ? 0.16 : 0.11;
+  const glowOpacity = phaseIndex === 3 ? 0.24 : phaseIndex === 2 ? 0.17 : 0.11;
 
   let gridLines = "";
   for (let x = 36; x < width; x += 44) {
-    gridLines += `<line x1="${x}" y1="0" x2="${x}" y2="${height * 0.73}" stroke="#1e293b" stroke-width="0.8" stroke-opacity="0.28" />`;
+    gridLines += `<line x1="${x}" y1="0" x2="${x}" y2="${height * 0.73}" stroke="#1e293b" stroke-width="0.8" stroke-opacity="0.30" />`;
   }
   for (let y = 28; y < height * 0.73; y += 44) {
-    gridLines += `<line x1="0" y1="${y}" x2="${width}" y2="${y}" stroke="#1e293b" stroke-width="0.8" stroke-opacity="0.28" />`;
+    gridLines += `<line x1="0" y1="${y}" x2="${width}" y2="${y}" stroke="#1e293b" stroke-width="0.8" stroke-opacity="0.30" />`;
   }
   gridLines += `<line x1="${width * 0.65}" y1="0" x2="${width}" y2="${height * 0.45}" stroke="#334155" stroke-width="0.8" stroke-opacity="0.22" />`;
   gridLines += `<line x1="${width * 0.78}" y1="0" x2="${width * 0.52}" y2="${height * 0.73}" stroke="#334155" stroke-width="0.8" stroke-opacity="0.18" />`;
@@ -327,7 +393,7 @@ function createMuscleVectorsOverlaySvg(width, height, mBox, phaseIndex) {
   const ty = clamp(top - pad, 35, height - 45);
   const by = clamp(bottom + pad, 45, height - 35);
 
-  const opacity = phaseIndex === 1 ? 0.65 : phaseIndex === 2 ? 0.85 : 0.95;
+  const opacity = phaseIndex === 1 ? 0.68 : phaseIndex === 2 ? 0.86 : 0.98;
 
   return Buffer.from(`
     <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
@@ -383,8 +449,9 @@ async function renderExerciseThreePhases(sheetPath, row, outPrefix) {
   const halfH = Math.floor(fullH / 2);
   const startY = row === "top" ? 0 : halfH;
 
-  const poseStart = processQuadrant(srcBuf, fullW, fullH, 0, startY, halfW, halfH, 0.78);
-  const poseEnd = processQuadrant(srcBuf, fullW, fullH, halfW, startY, halfW, halfH, 1.0);
+  const poseStart = processQuadrant(srcBuf, fullW, fullH, 0, startY, halfW, halfH, 0.72);
+  const poseMid = processQuadrant(srcBuf, fullW, fullH, halfW, startY, halfW, halfH, 0.88);
+  const poseEnd = processQuadrant(srcBuf, fullW, fullH, halfW, startY, halfW, halfH, 1.05);
 
   const outW = 800;
   const outH = 450;
@@ -431,6 +498,7 @@ async function renderExerciseThreePhases(sheetPath, row, outPrefix) {
   }
 
   const p1 = await composePoseOnCanvas(poseStart);
+  const p2 = await composePoseOnCanvas(poseMid);
   const p3 = await composePoseOnCanvas(poseEnd);
 
   // Fase 1: Inicio
@@ -441,10 +509,10 @@ async function renderExerciseThreePhases(sheetPath, row, outPrefix) {
       { input: p1.buf, left: p1.offsetLeft, top: p1.offsetTop },
       { input: vec1, left: 0, top: 0 },
     ])
-    .jpeg({ quality: 91 })
+    .jpeg({ quality: 92 })
     .toFile(`${outPrefix}_1.jpg`);
 
-  // Fase 2: Rango Dinámico
+  // Fase 2: Rango Dinámico (Transición cinemática equilibrada entre Pose 1 y Pose 2)
   const bg2 = createBackdropSvg(outW, outH, 2);
   const midMBox = {
     left: (p1.mBox.left + p3.mBox.left) / 2,
@@ -457,17 +525,22 @@ async function renderExerciseThreePhases(sheetPath, row, outPrefix) {
   const vec2 = createMuscleVectorsOverlaySvg(outW, outH, midMBox, 2);
   const ghostP1 = await sharp(p1.buf)
     .ensureAlpha()
-    .linear([1, 1, 1, 0.38], [0, 0, 0, 0])
+    .linear([1, 1, 1, 0.55], [0, 0, 0, 0])
+    .png()
+    .toBuffer();
+  const midP2 = await sharp(p2.buf)
+    .ensureAlpha()
+    .linear([1, 1, 1, 0.78], [0, 0, 0, 0])
     .png()
     .toBuffer();
 
   await sharp(bg2)
     .composite([
       { input: ghostP1, left: p1.offsetLeft, top: p1.offsetTop },
-      { input: p3.buf, left: p3.offsetLeft, top: p3.offsetTop },
+      { input: midP2, left: p2.offsetLeft, top: p2.offsetTop },
       { input: vec2, left: 0, top: 0 },
     ])
-    .jpeg({ quality: 91 })
+    .jpeg({ quality: 92 })
     .toFile(`${outPrefix}_2.jpg`);
 
   // Fase 3: Contracción Máxima
@@ -478,7 +551,7 @@ async function renderExerciseThreePhases(sheetPath, row, outPrefix) {
       { input: p3.buf, left: p3.offsetLeft, top: p3.offsetTop },
       { input: vec3, left: 0, top: 0 },
     ])
-    .jpeg({ quality: 91 })
+    .jpeg({ quality: 92 })
     .toFile(`${outPrefix}_3.jpg`);
 }
 
@@ -495,7 +568,7 @@ async function main() {
     }
     console.log(`Processed sheet_${num}.jpg (top & bottom -> 6 frames)`);
   }
-  console.log("All 120 Dark Studio Neon frames generated successfully!");
+  console.log("All 120 Dark Studio Neon 3D frames generated successfully!");
 }
 
 main().catch(console.error);
