@@ -1051,6 +1051,10 @@ export function ExerciseExecutionVisual({
     ANATOMICAL_SPRITE_CATALOG["press-banca-inclinado-mancuernas"];
 
   const isHome = Boolean(spec.isHomeExercise || spec.customImageUrl);
+  const freeDbId = spec.freeExerciseDbId || FREE_EXERCISE_DB_ID_BY_SLUG[exerciseId];
+  const realPhoto0 = freeDbId ? `${FREE_EXERCISE_DB_CDN_BASE}/${freeDbId}/0.jpg` : null;
+  const realPhoto1 = freeDbId ? `${FREE_EXERCISE_DB_CDN_BASE}/${freeDbId}/1.jpg` : null;
+  const hasRealPhotos = Boolean(realPhoto0 && realPhoto1);
 
   type ViewMode = "HD_IMAGE" | "ANATOMY_2_POSES" | "VIDEO_GIF";
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -1074,14 +1078,15 @@ export function ExerciseExecutionVisual({
 
   const alignedFrames = useAlignedExerciseFrames(spec.sheetUrl, spec.row);
 
+  // Animación continua entre Inicio y Contracción
   useEffect(() => {
-    if (!paused && viewMode === "ANATOMY_2_POSES") {
+    if (!paused) {
       const timer = setInterval(() => {
         setActiveFrame((prev) => (prev === 0 ? 1 : 0));
       }, 1150);
       return () => clearInterval(timer);
     }
-  }, [paused, viewMode]);
+  }, [paused]);
 
   // Miniatura en las tarjetas de "Máquinas e Instrumentos Alternativos"
   if (compact) {
@@ -1092,6 +1097,13 @@ export function ExerciseExecutionVisual({
         {spec.customImageUrl ? (
           <img
             src={spec.customImageUrl}
+            alt={spec.badge}
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
+        ) : realPhoto0 ? (
+          <img
+            src={realPhoto0}
             alt={spec.badge}
             className="h-full w-full object-cover"
             draggable={false}
@@ -1140,11 +1152,18 @@ export function ExerciseExecutionVisual({
             className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl border border-zinc-800/80"
             draggable={false}
           />
-        ) : viewMode === "VIDEO_GIF" && !gifFailed ? (
+        ) : viewMode === "VIDEO_GIF" ? (
           <div className="w-full h-full flex items-center justify-center">
-            {!paused ? (
+            {hasRealPhotos ? (
               <img
-                src={spec.gifUrl}
+                src={!paused ? (activeFrame === 0 ? realPhoto0! : realPhoto1!) : realPhoto1!}
+                alt={`${spec.badge} - ${activeFrame === 0 ? "Fase Inicial" : "Contracción"}`}
+                className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl border border-zinc-800/80 transition-all duration-300"
+                draggable={false}
+              />
+            ) : !gifFailed ? (
+              <img
+                src={!paused ? spec.gifUrl : alignedFrames ? alignedFrames[1] : spec.gifUrl}
                 alt={spec.badge}
                 onError={() => setGifFailed(true)}
                 className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
@@ -1152,24 +1171,36 @@ export function ExerciseExecutionVisual({
               />
             ) : alignedFrames ? (
               <img
-                src={alignedFrames[1]}
+                src={alignedFrames[activeFrame]}
                 alt={`${spec.badge} - Pausa`}
                 className="max-h-full max-w-full object-contain filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
                 draggable={false}
               />
-            ) : (
-              <img
-                src={spec.gifUrl}
-                alt={spec.badge}
-                className="max-h-full max-w-full object-contain"
-                draggable={false}
-              />
-            )}
+            ) : null}
           </div>
         ) : (
           /* Vista de 2 Poses Anatómicas (Inicio y Contracción) */
           <div className="w-full h-full grid grid-cols-2 items-center gap-2 p-1">
-            {alignedFrames && (
+            {hasRealPhotos ? (
+              <>
+                <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2 overflow-hidden">
+                  <img
+                    src={realPhoto0!}
+                    alt={`${spec.badge} - Inicio`}
+                    className="max-h-full max-w-full rounded-xl object-contain shadow-md"
+                    draggable={false}
+                  />
+                </div>
+                <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2 overflow-hidden">
+                  <img
+                    src={realPhoto1!}
+                    alt={`${spec.badge} - Contracción`}
+                    className="max-h-full max-w-full rounded-xl object-contain shadow-md"
+                    draggable={false}
+                  />
+                </div>
+              </>
+            ) : alignedFrames ? (
               <>
                 <div className="h-full w-full flex items-center justify-center rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-2">
                   <img
@@ -1188,7 +1219,7 @@ export function ExerciseExecutionVisual({
                   />
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         )}
       </div>
