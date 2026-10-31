@@ -1,91 +1,82 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 
-// Clave oficial válida probada y verificada
-const VALID_SUPABASE_URL = "https://oasfvjaukwanhlqngtir.supabase.co";
-const VALID_SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hc2Z2amF1a3dhbmhscW5ndGlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNjMyNjAsImV4cCI6MjEwODgzOTI2MH0.mUxPv53wkgJSXr7T-d7dRGpGF-3BxThnPTNcXgQ6ktw";
+// Clave codificada en Base64 para que Docker / Dokploy / Webpack no puedan alterarla ni una sola letra
+const B64_KEY =
+  "ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW05aGMyWjJhbUYxYTNkaGJtaHNjVzVuZEdseUlpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzT1RNeU5qTXlOakFzSW1WNGNDSTZNakV3T0Rnek9USTJNSDAubVV4UHY1M3drZ0pTWHI3VC1kN2RSR3BHRi0zQnhUaG5QVE5jWGdRNmt0dw==";
 
-const serverSupabase = createClient(VALID_SUPABASE_URL, VALID_SUPABASE_ANON_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+const SUPABASE_KEY = Buffer.from(B64_KEY, "base64").toString("utf-8");
+const SUPABASE_URL = "https://oasfvjaukwanhlqngtir.supabase.co";
 
 export async function POST(req: NextRequest) {
-  const timestamp = new Date().toISOString();
   try {
     const body = await req.json();
     const { action, email, password, fullName } = body;
 
-    console.log(`[AUTH-DIAGNOSTIC ${timestamp}] Action: ${action} | Email: ${email}`);
+    console.log(`[AUTH-DIRECT] Action: ${action} | Email: ${email}`);
 
-    if (action === "SIGNUP") {
-      const { data, error } = await serverSupabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { full_name: fullName },
+    const endpoint =
+      action === "SIGNUP"
+        ? `${SUPABASE_URL}/auth/v1/signup`
+        : `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
+
+    const payload =
+      action === "SIGNUP"
+        ? {
+            email,
+            password,
+            data: { full_name: fullName },
+          }
+        : {
+            email,
+            password,
+          };
+
+    // Llamada HTTP directa nativa con fetch de Node (sin SDK ni intermediarios)
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("[AUTH-DIRECT ERROR]", response.status, data);
+      return NextResponse.json(
+        {
+          error: data.msg || data.message || data.error_description || "Error de autenticación",
+          diagnostic: {
+            status: response.status,
+            raw: data,
+          },
         },
-      });
-
-      if (error) {
-        console.error(`[AUTH-DIAGNOSTIC-ERROR ${timestamp}] SIGNUP failed for ${email}:`, error);
-        return NextResponse.json(
-          {
-            error: error.message,
-            diagnostic: {
-              status: error.status,
-              code: error.code || (error as any).name,
-              details: error.message,
-              supabaseUrl: VALID_SUPABASE_URL,
-            },
-          },
-          { status: 400 }
-        );
-      }
-
-      console.log(`[AUTH-DIAGNOSTIC-SUCCESS ${timestamp}] User registered successfully:`, data.user?.id);
-      return NextResponse.json({ data, success: true });
+        { status: response.status }
+      );
     }
 
-    if (action === "LOGIN") {
-      const { data, error } = await serverSupabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error(`[AUTH-DIAGNOSTIC-ERROR ${timestamp}] LOGIN failed for ${email}:`, error);
-        return NextResponse.json(
-          {
-            error: error.message,
-            diagnostic: {
-              status: error.status,
-              code: error.code,
-              details: error.message,
-              supabaseUrl: VALID_SUPABASE_URL,
-            },
-          },
-          { status: 400 }
-        );
-      }
-
-      console.log(`[AUTH-DIAGNOSTIC-SUCCESS ${timestamp}] User logged in successfully:`, data.user?.id);
-      return NextResponse.json({ data, success: true });
-    }
-
-    return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
+    console.log("[AUTH-DIRECT SUCCESS]", data.user?.id || data.id);
+    return NextResponse.json({
+      data: {
+        user: data.user || data,
+        session: data.access_token
+          ? {
+              access_token: data.access_token,
+              refresh_token: data.refresh_token,
+              user: data.user,
+            }
+          : undefined,
+      },
+      success: true,
+    });
   } catch (err: any) {
-    console.error(`[AUTH-DIAGNOSTIC-FATAL ${timestamp}] Unexpected error:`, err);
+    console.error("[AUTH-DIRECT FATAL]", err);
     return NextResponse.json(
       {
         error: err?.message || "Error interno del servidor",
-        diagnostic: {
-          fatal: true,
-          stack: err?.stack,
-        },
       },
       { status: 500 }
     );
